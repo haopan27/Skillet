@@ -27,7 +27,8 @@
 #define BM B(MineralField)
 #define BO B(Owned)
 #define BW B(Worker)
-#define UA ->isUnderAttack()
+#define IU ->isUnderAttack()
+#define IF ->isFlying()
 #define ua u->attack
 #define ud u->getDistance
 #define ut u->train
@@ -57,7 +58,7 @@ struct ExampleAIModule :AIModule {
   M(n>41&&CC(100)==1) BB(100); M(CC(104)==1&&!GR(S(k9),400,BO&&BW&&B(Completed)).empty()) BB(104,k9);
   w=n=R=0;
  for (U u:C->getUnits()) {
-  if (Q==F[3]) { if (CC(15)+CC(0)==0) {um(S(D));CT;}M(U cf=X GC(S(P),BO&&B(Flyer)&&Filter::CanAttack)) {if (cf UA&&!cf->isDefenseMatrixed()&&GE>99&&O-cd>30) {cd=O;uu(TechTypes::Defensive_Matrix, cf);CT;} um(cf->getPosition());CT;}CT;}
+  if (Q==F[3]) { if (CC(15)+CC(0)==0) {um(S(D));CT;}M(U cf=X GC(S(P),BO&&!B(Worker)&&Filter::CanAttack)) {if (cf IU&&!cf->isDefenseMatrixed()&&GE>99&&O-cd>30) {cd=O;uu(TechTypes::Defensive_Matrix, cf);CT;} um(cf->getPosition());CT;}CT;}
   w+=Q.supplyProvided();n+=Q.supplyRequired();
   U Z=u GC(BE,200);Z&&!Z->isMoving()?y[Z]=O:w; u->isStartingAttack()?y[u]=O:w;
   if (d&&u==v)s(u), ud(S(f))<200?u->build(F[e],f):um(S(f));
@@ -71,19 +72,22 @@ struct ExampleAIModule :AIModule {
    if (!CC(3)&&!CI(3)) ut(F[3]);
   G?ut(F[0]):ut(F[15]);}
   if (Q == F[100]) {
-	  if (P != D && P != k9)
-		  if (!u->isFlying()) {if (u->isTraining()) u->cancelTrain(); u->lift();}
-		  M(ud(S(k9)) > 200) um(S(k9));
-	      M(u->isMoving()) {if (m.empty()) p(k9); u->land(k9);}}
-  u->buildAddon(F[109]); G?a:u->buildAddon(F[112]);}
-  M(Q == F[13]) {!L(v) ? v = u : v;
-  if (Z&&(O-y[Z])<99 && !Z->isFlying())s(u), K!=Z ? ua(Z) : a;
+   if (P != D && P != k9)
+    if (!u IF) {if (u->isTraining()) u->cancelTrain(); u->lift();}
+    M(ud(S(k9)) > 200) um(S(k9));
+	M(u->isMoving()) {if (m.empty()) p(k9); u->land(k9);}
+  }
+  u->buildAddon(F[109]); G?a:u->buildAddon(F[112]);
+  }
+  M(Q == F[13]) {
+  !L(v) ? v = u : v;
+  if (Z&&(O-y[Z])<99 && !Z IF)s(u), K!=Z ? ua(Z) : a;
   M(ud(S(k9))<400) {if (u->isIdle())if (U cm = u GC(BM)) { u->gather(cm);CT;}}
   M(m.size()&&!q[u])if (u->gather(m[0]))q[u]=m[0], m.erase(m.begin()); M(1)um(S(k(2)));
   M(K&&K->getResources() && K!=q[u])u->gather(q[u]);}
-  M(O-y[u]<4); M(O%2500==0&&u->isFlying())z[u]=u; M(h.empty())O%500==0 ? I(u, T(rand()%2*X->mapWidth(), rand()%2*128)) : a;
+  M(O-y[u]<4); M(O%2500==0&&u IF)z[u]=u; M(h.empty())O%500==0 ? I(u, T(rand()%2*X->mapWidth(), rand()%2*128)) : a;
   M((G?CC(0)>7:CC(15)>4)&&z[u])I(u,h[0]); M(1)I(u,D);
-  if(Q==F[0])if (HR(CF)&&!u->isCloaked()&&u UA) uu(CF);			
+  if(Q==F[0])if (HR(CF)&&!u->isCloaked()&&u IU) uu(CF);			
   if (Q==F[15])if (L(Z))if (Z->getType().airWeapon()!=WeaponTypes::None&&Z->getHitPoints()>99||Z->getType()==F[66])if (HR(YG)&&GE>150&&O-cy>80) {cy=O;uu(YG, Z);CT;}
   if (Q==F[0]||Q==F[2]||Q==F[15])if (U ZZ=u GC(BE,400))if (L(ZZ)) K!=ZZ?ua(ZZ):a;
  }
