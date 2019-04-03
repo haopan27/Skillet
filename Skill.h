@@ -11,12 +11,14 @@
 #define GI X->getUnitsOnTile
 #define GR X->getUnitsInRadius
 #define K u->getOrderTarget()
-#define L(z)(z&&z->exists())
 #define M else if
 #define N void
 #define P u->getTilePosition()
 #define gt ->getType()
+#define gh ->getHitPoints()
+#define gs ->getShields()
 #define Q u gt
+#define L(z)(z&&z->exists()&&z->isDetected()&&z gt!=F[67])
 #define Y using
 #define RT return
 #define CT continue
@@ -56,13 +58,13 @@ N I(U u,T z) {O%48==0?ua(S(z)):a;}
 N BB(W u,T b0=D,T z=D) {if(O-cc>(b0==kn?600:240)) {cc=O;U br=X GC(S(z),BW&&(B(Idle)||B(GatheringMinerals))&&BO,400);L(br)?br->build(F[u],b0==D?GB(F[u],z,18):b0):a;}}
 struct ExampleAIModule :AIModule {
  N onFrame() {
-  O=X->getFrameCount();kn=k(0);if(X->mapHash()[0]==54)b[2]=80;if (!O) {D=C->getStartLocation();H(i,read,&G);for (T u:X->getStartLocations())u!=D?h.push_back(u):a;p(kn);p(D);}
+  O=X->getFrameCount();kn=k(0);if (!O) {D=C->getStartLocation();H(i,read,&G);for (T u:X->getStartLocations())u!=D?h.push_back(u):a;p(kn);p(D);}
   for (auto u=h.begin();u!=h.end();) u=X->isVisible(*u)&&GI(*u,B(Building)&&BE).empty()?i[*u]=t,h.erase(u):u+1;
   for (U u:XE->getUnits())!i[P]&&Q.isBuilding()?i[P]=u,h.push_back(P):a;
   for (;R<3;R++) if (CL(c[R])<(c[R]==123?2:1)&&O>b[R]*99) {BB(c[R],k(R));break;}
   if (n>23&&CL(140)<(W)GR(S(D),400,B(ResourceContainer)&&!BM).size()) BB(140);
   M(CC(140)==1&&!GR(S(kn),400,BO&&BW&&B(Completed)).empty()) BB(140,D,kn);M(CL(c[2])) CL(123)<5?BB(123):(CL(130)?a:BB(130));
-  wp=w;np=n;xp=x;w=n=x=R=0;
+  wp=w;np=n;xp=x;w=n=x=R=0;map<U,W>es;
  for (U u:C->getUnits()) {
   w+=Q.supplyProvided();n+=Q.supplyRequired();
   U Z=u GC(BE,200);Z&&!Z IM?y[Z]=O:w;u->isStartingAttack()?y[u]=O:w;
@@ -70,16 +72,16 @@ struct ExampleAIModule :AIModule {
   M(Q==F[34]) {
    if (wp<400){if (CC(c[2])&&1.0*np/wp>0.8)O-co>200?co=O,ut(F[41]):a;M(np>17&&wp-np<4)O-co>601?co=O,ut(F[41]):a;}
    for (S ip:{S(D),S(kn)}) if(ud(ip)<128&&GR(ip,320,BO&&BW).size()<19&&CC(40)<38) O>b[0]*99&&C->minerals()<352&&GI(kn,BO&&B(Building)).empty()?a:ut(F[40]);
-   CC(125)&&!HU(AG)&&!C->isUpgrading(AG)?a:C->gas()>151?ut(F[42]):a,ut(F[36]);
+   CC(125)&&!HU(AG)&&!C->isUpgrading(AG)?a:C->gas()>151?(G?(CC(46)<18&&2*CC(46)<CC(36)?ut(F[46]):ut(F[36])):ut(F[42])):ut(F[36]);
   }
   M(Q==F[40]) {
    if (Z&&(O-y[Z])<99&&!Z IF)s(u),K!=Z?ua(Z):a;
    M(ud(S(kn))<320&&CL(123)>1) {if (u->isIdle())if (U cm=u GC(BM)) {ug(cm);CT;}}
-   M(m.size()&&!q[u])if (ug(m[0]))q[u]=m[0],m.erase(m.begin());M(1)um(S(k(0)));
+   M(m.size()&&!q[u])if (ug(m[0]))q[u]=m[0],m.erase(m.begin());M(1)um(S(k(1)));
    M(K&&K->getResources()&&K!=q[u])ug(q[u]);
   }
   M(Q==F[41]) {
-if(HU(VS)&&HU(PC)&&u->getHitPoints()>159&&cm>2){
+if(HU(VS)&&HU(PC)&&u gh>159&&cm>(G?3:2)){
    if(!GR(S(P),160,BE&&!BF).empty()) {NL?u->unload(u->getLoadedUnits().begin()._Ptr->_Myval):um(S(D));}
    M(U cz=u GC(BO&&!BW&&!BF&&!B(Loaded)&&Filter::CanAttack,256))!GR(cz->getPosition(),99,BO&&B(ResourceDepot)).empty()?(NL<8?u->load(cz):(!u IM&&xp>2?(SM):a)):a;
    M(NL>3)x++,!u IM&&xp>2?SM:a;
@@ -87,9 +89,10 @@ if(HU(VS)&&HU(PC)&&u->getHitPoints()>159&&cm>2){
 GR(S(kn),250,BO).empty()&&!NL?um(S(kn)):a;
   }
   M(O-y[u]<4);M(O%2500==0&&u IF)z[u]=u;M(h.empty())O%500==0?I(u,RP):a;
-  M(CC(42)>3&&z[u])I(u,h[0]);M(1)I(u,D);
-  if (Q==F[36]||Q==F[42])if (U ZZ=u GC(Q==F[36]?BE&&!BF:BE,400)) L(ZZ)&&ZZ gt!=F[67]&&ZZ->isDetected()&&K!=ZZ?ua(ZZ):a;
+  M((G?CC(46)>5:CC(42)>3)&&z[u])I(u,h[0]);M(1)I(u,D);
+  if (Q==F[36]||Q==F[42])if (U ZZ=u GC(Q==F[36]?BE&&!BF:BE,400)) L(ZZ)&&K!=ZZ?ua(ZZ):a;
+  if (Q==F[46])if (U ZZ=u GC(BE&&BF,400)) L(ZZ)&&es[ZZ]<=(ZZ gh+ZZ gs)/110?es[ZZ]++,ua(ZZ):a;
  }}
- N onUnitComplete(U u) {Q==F[140]?o(u),o(u):(Q==F[42]?cm++:0);}
+ N onUnitComplete(U u) {Q==F[140]?o(u),o(u):(Q==F[42]||Q==F[46]?cm++:0);}
  N onEnd(bool u) { H(o,write,u!=!G?"1":"\0");}
 };
