@@ -1,0 +1,10 @@
+*.pdb
+*.tlog
+*.exp
+*.iobj
+Release/ExampleAIModule.ipdb
+Release/ExampleAIModule.lib
+*.log
+*.suo
+.vs/
+*.obj

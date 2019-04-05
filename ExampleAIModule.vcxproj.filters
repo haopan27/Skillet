@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Dll.cpp" />
+    <ClCompile Include="BWEB\Block.cpp">
+      <Filter>BWEB</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEB\BWEB.cpp">
+      <Filter>BWEB</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEB\PathFind.cpp">
+      <Filter>BWEB</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEB\Station.cpp">
+      <Filter>BWEB</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEB\Wall.cpp">
+      <Filter>BWEB</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\area.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\base.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\bwapiExt.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\bwem.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\cp.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\examples.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\exampleWall.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\graph.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\gridMap.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\map.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\mapDrawer.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\mapImpl.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\neutral.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\tiles.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\utils.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\winutils.cpp">
+      <Filter>BWEM</Filter>
+    </ClCompile>
+    <ClCompile Include="BWEM\BaseFinder\BaseFinder.cpp">
+      <Filter>BWEM\BaseFinder</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Hugh.h" />
+    <ClInclude Include="OhFish.h" />
+    <ClInclude Include="PurpleEssence.h" />
+    <ClInclude Include="Skill.h" />
+    <ClInclude Include="Skillet.h" />
+    <ClInclude Include="SkillFull.h" />
+    <ClInclude Include="BWEB\Block.h">
+      <Filter>BWEB</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEB\BWEB.h">
+      <Filter>BWEB</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEB\JPS.h">
+      <Filter>BWEB</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEB\PathFind.h">
+      <Filter>BWEB</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEB\Station.h">
+      <Filter>BWEB</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEB\Wall.h">
+      <Filter>BWEB</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\area.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\base.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\bwapiExt.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\bwem.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\cp.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\defs.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\examples.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\exampleWall.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\graph.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\gridMap.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\map.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\mapDrawer.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\mapImpl.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\neutral.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\tiles.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\utils.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\winutils.h">
+      <Filter>BWEM</Filter>
+    </ClInclude>
+    <ClInclude Include="BWEM\BaseFinder\BaseFinder.h">
+      <Filter>BWEM\BaseFinder</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="BWEB">
+      <UniqueIdentifier>{25871c47-dfad-4d59-8568-b78e0a9eded7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BWEM">
+      <UniqueIdentifier>{158f72dd-ea85-4be0-97a0-d71affbc7762}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BWEM\BaseFinder">
+      <UniqueIdentifier>{63def4f1-afb5-4e67-94ad-f5fd3c4202be}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

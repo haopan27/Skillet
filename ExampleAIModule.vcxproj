@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2E63AE74-758A-4607-9DE4-D28E814A6E13}</ProjectGuid>
+    <RootNamespace>ExampleAIModule</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v141_xp</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_WIN32_WINNT=0x0501;NTDDI_VERSION=0x05010300;_DEBUG;_WINDOWS;_USRDLL;EXAMPLEAIMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <PreLinkEvent />
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(BWAPI_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_WIN32_WINNT=0x0501;NTDDI_VERSION=0x05010300;NDEBUG;_WINDOWS;_USRDLL;EXAMPLEAIMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <PreLinkEvent />
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>$(BWAPI_DIR)\Release\BWAPILIB.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="BWEB\Block.cpp" />
+    <ClCompile Include="BWEB\BWEB.cpp" />
+    <ClCompile Include="BWEB\PathFind.cpp" />
+    <ClCompile Include="BWEB\Station.cpp" />
+    <ClCompile Include="BWEB\Wall.cpp" />
+    <ClCompile Include="BWEM\area.cpp" />
+    <ClCompile Include="BWEM\base.cpp" />
+    <ClCompile Include="BWEM\BaseFinder\BaseFinder.cpp" />
+    <ClCompile Include="BWEM\bwapiExt.cpp" />
+    <ClCompile Include="BWEM\bwem.cpp" />
+    <ClCompile Include="BWEM\cp.cpp" />
+    <ClCompile Include="BWEM\examples.cpp" />
+    <ClCompile Include="BWEM\exampleWall.cpp" />
+    <ClCompile Include="BWEM\graph.cpp" />
+    <ClCompile Include="BWEM\gridMap.cpp" />
+    <ClCompile Include="BWEM\map.cpp" />
+    <ClCompile Include="BWEM\mapDrawer.cpp" />
+    <ClCompile Include="BWEM\mapImpl.cpp" />
+    <ClCompile Include="BWEM\neutral.cpp" />
+    <ClCompile Include="BWEM\tiles.cpp" />
+    <ClCompile Include="BWEM\utils.cpp" />
+    <ClCompile Include="BWEM\winutils.cpp" />
+    <ClCompile Include="Dll.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BWEB\Block.h" />
+    <ClInclude Include="BWEB\BWEB.h" />
+    <ClInclude Include="BWEB\JPS.h" />
+    <ClInclude Include="BWEB\PathFind.h" />
+    <ClInclude Include="BWEB\Station.h" />
+    <ClInclude Include="BWEB\Wall.h" />
+    <ClInclude Include="BWEM\area.h" />
+    <ClInclude Include="BWEM\base.h" />
+    <ClInclude Include="BWEM\BaseFinder\BaseFinder.h" />
+    <ClInclude Include="BWEM\bwapiExt.h" />
+    <ClInclude Include="BWEM\bwem.h" />
+    <ClInclude Include="BWEM\cp.h" />
+    <ClInclude Include="BWEM\defs.h" />
+    <ClInclude Include="BWEM\examples.h" />
+    <ClInclude Include="BWEM\exampleWall.h" />
+    <ClInclude Include="BWEM\graph.h" />
+    <ClInclude Include="BWEM\gridMap.h" />
+    <ClInclude Include="BWEM\map.h" />
+    <ClInclude Include="BWEM\mapDrawer.h" />
+    <ClInclude Include="BWEM\mapImpl.h" />
+    <ClInclude Include="BWEM\neutral.h" />
+    <ClInclude Include="BWEM\tiles.h" />
+    <ClInclude Include="BWEM\utils.h" />
+    <ClInclude Include="BWEM\winutils.h" />
+    <ClInclude Include="Hugh.h" />
+    <ClInclude Include="OhFish.h" />
+    <ClInclude Include="PurpleEssence.h" />
+    <ClInclude Include="Skill.h" />
+    <ClInclude Include="Skillet.h" />
+    <ClInclude Include="SkillFull.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
