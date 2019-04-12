@@ -142,7 +142,7 @@ struct ExampleAIModule :AIModule {
 		}
 
 		/*
-		for (int i = 0; i < F.size(); ++i) {
+		for (int i = 0; i < (W)F.size(); ++i) {
 			if (F[i] == BWAPI::UnitTypes::Terran_Refinery)
 				X << "Rfnr " << i << endl;
 		}*/

@@ -31,10 +31,9 @@ namespace BWEB::Map
         void findNatural()
         {
             auto distBest = DBL_MAX;
-            for (auto &area : mapBWEM.Areas()) {
-                for (auto &base : area.Bases()) {
-
-                    // Must have gas, be accesible and at least 5 mineral patches
+			for (auto &area : mapBWEM.Areas()) {
+                for (auto &base : area.Bases()) {                    
+					// Must have gas, be accesible and at least 5 mineral patches
                     if (base.Starting()
                         || base.Geysers().empty()
                         || area.AccessibleNeighbours().empty()
