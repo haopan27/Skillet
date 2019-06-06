@@ -80,6 +80,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <PreLinkEvent />
     <Link>
@@ -89,7 +90,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>$(BWAPI_DIR)\Release\BWAPILIB.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -118,6 +119,7 @@
     <ClCompile Include="Dll.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BattleCommander.h" />
     <ClInclude Include="BWEB\Block.h" />
     <ClInclude Include="BWEB\BWEB.h" />
     <ClInclude Include="BWEB\JPS.h" />
@@ -148,6 +150,11 @@
     <ClInclude Include="Skill.h" />
     <ClInclude Include="Skillet.h" />
     <ClInclude Include="SkillFull.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BWAPI440\Release_Binary\BWAPILIB\BWAPILIB.vcxproj">
+      <Project>{843656fd-9bfd-47bf-8460-7bfe9710ea2c}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

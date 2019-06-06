@@ -148,6 +148,7 @@
     <ClInclude Include="BWEM\BaseFinder\BaseFinder.h">
       <Filter>BWEM\BaseFinder</Filter>
     </ClInclude>
+    <ClInclude Include="BattleCommander.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="BWEB">
