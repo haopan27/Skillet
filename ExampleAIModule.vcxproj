@@ -91,6 +91,7 @@
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/LTCG %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -148,6 +149,7 @@
     <ClInclude Include="OhFish.h" />
     <ClInclude Include="PurpleEssence.h" />
     <ClInclude Include="Skill.h" />
+    <ClInclude Include="Skill2.h" />
     <ClInclude Include="Skillet.h" />
     <ClInclude Include="SkillFull.h" />
   </ItemGroup>

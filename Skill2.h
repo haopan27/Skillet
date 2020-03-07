@@ -68,33 +68,6 @@
 #define me4or5PoolEarly me4or5Pool && CL(123) < 2
 Y namespace std; Y namespace BWAPI; Y S = Position; Y T = TilePosition; Y U = Unit; Y V = UnitType; Y W = int; Y H = bool; Y J = double; auto&X = Broodwar;
 
-A<string> hisInfo;
-const int secondsPerTick = 10;
-const int framesPerTick = secondsPerTick * 24;
-A<V> hisTypesToCheck;
-char num2char(int num_in) {
-	int num_33 = num_in + 33;
-
-	if (num_33 >= 127) {
-		if (num_33 <= 255) {
-			switch (num_33) {
-			case 127: num_33++; break;
-			case 129: num_33++; break;
-			case 141: num_33++; break;
-			case 143: num_33+=2; break;
-			case 144: num_33++; break;
-			case 157: num_33++; break;
-			case 160: num_33++; break;
-			default:;
-			}
-		}
-		else num_33 = 255;
-	}
-
-	RT static_cast<char>(num_33);
-}
-string hisRaceName;
-
 W CC(W u) { RT u == 123 ? C->completedUnitCount(F[123]) + C->completedUnitCount(F[124]) + C->completedUnitCount(F[125]) : C->completedUnitCount(F[u]); } // count my completed units
 W CI(W u) { RT C->incompleteUnitCount(F[u]); } // count my incompleted units (being trained, morphed, etc).
 W countMyMorphingUnits(V v) {
@@ -115,7 +88,7 @@ A<A<W>> b = {
 	{12,12,12,20},	// ZvP 2baseMuta
 	{12,12,12,16},	// ZvP 2baseHydra
 	{0},			// ZvP --
-	{22,4,60},		// ZvT 4 Pool
+	{22,6,60},		// ZvT 4 Pool
 	{8,10,15},		// ZvT 1baseLurker
 	{12,12,12,20},	// ZvT 2baseMuta
 	{12,12,12,16},	// ZvT 2baseHydra
@@ -149,7 +122,6 @@ c = {
 	//{123,134,140,127},// ZvZ 1baseHydra
 	{0}					// ZvZ --
 };
-
 A<W>bG, cG;// build order timing and what to build ==> pertaining to a specific build order
 A<W>si = { 0,20,40,58,76,94,116,140,156,174,190,206,222,238,256 }; // starting index specific to map
 A<T>h; // target queue (vector)
@@ -195,6 +167,8 @@ N o(U u) { m.insert(m.begin(), u); } // Add resources to gather
 N p(T u) { for (U z : GR(S(u), 400, BM))o(z), o(z); } // add all mineral patches close to a position to the queue
 N s(U u) { if (q[u])o(q[u]), q.erase(u); } // remove a worker from a gather assignment
 N I(U u, T z) { O % 48 == 0 ? ua(S(z)) : "a"; } // attack the given target with the given unit unless it is already doing so
+
+W myMutaGroupCD_since = 0;
 
 T FindBuildingPlacementAroundAPoint(V buildingType, T searchCenter) {
 	W mapWidth = X->mapWidth();
@@ -356,7 +330,7 @@ N SmartAttack(U attacker, U target)
 
 	int attackCD = 10;
 	// Data from: https://docs.google.com/spreadsheets/d/1bsvPvFil-kpvEUfSG74U3E5PLSTC02JxSkiR8QdLMuw/edit#gid=0
-	V attackerType = attacker gt;
+	BWAPI::UnitType attackerType = attacker gt;
 	if (attackerType == F[36]) attackCD = 5;
 	M(attackerType == F[37]) attackCD = 3;
 	M(attackerType == F[38]) attackCD = 15;
@@ -449,8 +423,7 @@ struct ExampleAIModule :AIModule {
 		X->setCommandOptimizationLevel(1);
 		X->enableFlag(Flag::UserInput);
 
-		ER == R1 ? hisRaceName = "_P" : (ER == R2 ? hisRaceName = "_T" : hisRaceName = "_Z");
-		ifstream mf("bwapi-data/read/" + XE->getName() + hisRaceName + ".txt");
+		ifstream mf("bwapi-data/read/" + XE->getName() + ".txt");
 		if (mf) {
 			W td = -1; W lc; while (mf >> lc) { ++td; GS[td] = lc; } mf.close();
 
@@ -500,7 +473,7 @@ struct ExampleAIModule :AIModule {
 		else {
 			switch (ER) {
 			case R1: G = 1; BK;
-			case R2: G = 9; BK;
+			case R2: G = 6; BK;
 			case R3: G = 11; BK;
 			default: G = 1; BK;
 			}
@@ -529,18 +502,12 @@ struct ExampleAIModule :AIModule {
 
 		for (T sl : X->getStartLocations())
 			myScoutTargetsAndStatus[sl] = false;
-
-		hisInfo.reserve(3600 / secondsPerTick + 1); // Assuming BASIL env, where games last for 60 minutes
-		if (ER == R2) hisTypesToCheck = { 
-			Terran_SCV, Terran_Marine, Terran_Firebat, 
-			Terran_Medic, Terran_Ghost, Terran_Vulture, 
-			Terran_Siege_Tank_Tank_Mode, Terran_Goliath,
-			Terran_Wraith, Terran_Valkyrie, Terran_Battlecruiser,
-			Terran_Science_Vessel, Terran_Dropship, Terran_Bunker };
 	} // N onStart()
 
 	N onFrame() {
 		// DEV X << ... << endl;
+		
+		
 		/*
 		WalkPosition mouse(Broodwar->getMousePosition() + Broodwar->getScreenPosition());
 		auto mouseArea = mouse.isValid() ? bwemMapInstance.GetArea(mouse) : nullptr;
@@ -587,23 +554,10 @@ struct ExampleAIModule :AIModule {
 		for (auto u = h.begin(); u != h.end();) u = X->isVisible(*u) && GI(*u, B(Building) && BE).empty() ? i[*u] = t, h.erase(u) : u + 1;
 		for (U u : XE->getUnits())!i[P] && Q.isBuilding() ? i[P] = u, h.push_back(P) : "a";
 
-		//if (O < 14400 && O % 720 == 0) ER == R1 ? hisRaceName = "_P" : (ER == R2 ? hisRaceName = "_T" : hisRaceName = "_Z");
-
-		// update hisInfo every X seconds, assuming max game time is 60 minutes
-		if (O <= 86401 && (O - 1) % framesPerTick == 0) {
-			X << 3600 / secondsPerTick + 1 << endl;
-			string thisStr;
-			for (auto i : hisTypesToCheck) {
-				if (!i.isBuilding()) thisStr.push_back(num2char(countHisUnits(i)));
-				else thisStr.push_back(num2char(countHisBuildings(i)));
-			}
-			hisInfo.push_back(thisStr);
-		}
-
 		// COEP Starts
 		if (meCOEP) {
 			if (myOrders.empty()) {
-				A<V> myFeasibleActions = myFeasibleActionsGen();
+				std::vector<UnitType> myFeasibleActions = myFeasibleActionsGen();
 				//runCOEP(..., int popSize, int numGenerations, int championSize, double crossOverRate, double mutationRate)
 				myOrders = runCOEP(myFeasibleActions, 12, 12, 18, 0.6, 0.6);
 			}
@@ -713,10 +667,66 @@ struct ExampleAIModule :AIModule {
 		wp = w; np = n; xp = x; w = n = x = R = 0; map<U, W>es;
 		H myScoutFound = false;
 
-		// Regularizing my units' behaviors...
+		Unitset myMutaGroupNoLarva;
+		Unitset myMutaGroup;
+		bool	larvaIncluded = false;
+		for (U u : C->getUnits()) {
+			if (u->exists() && u->isCompleted() && !u->isIrradiated()) {
+				if (u->getType() == Zerg_Mutalisk) {
+					myMutaGroupNoLarva.emplace_hint(myMutaGroupNoLarva.begin(), u);
+					myMutaGroup.emplace_hint(myMutaGroup.begin(), u);
+				}
+
+				if (u->getType() == Zerg_Larva && !larvaIncluded) {
+					myMutaGroup.emplace_hint(myMutaGroup.begin(), u);
+					larvaIncluded = true;
+				}
+			}
+		}
+
+		if (myMutaGroup.size() > 1) {
+			S groupCenterPos = myMutaGroupNoLarva.getPosition();
+			int maxDistToGroupCenter = 0;
+			for (auto u : myMutaGroup) {
+				if (u->getType() == Zerg_Mutalisk) {
+					int thisDistToGroupCenter = distSq<true>(groupCenterPos, u);
+					if (thisDistToGroupCenter > maxDistToGroupCenter)
+						maxDistToGroupCenter = thisDistToGroupCenter;
+				}
+			}
+
+			if (auto hisClosestAttacker = X->getClosestUnit(groupCenterPos, BE && BWAPI::Filter::CanAttack)) {
+				if (O - myMutaGroupCD_since < 30) {
+					if (O - myMutaGroupCD_since <= 4) RT;
+
+					myMutaGroup.move(S(D));
+					RT;
+				}
+
+				int distToHisAttacker = distSq<true>(groupCenterPos, hisClosestAttacker);
+
+				if (distToHisAttacker > 96 * 96) {
+					myMutaGroup.move(hisClosestAttacker->getPosition());
+					RT;
+				}
+				else if (O - myMutaGroupCD_since >= 30) {
+					myMutaGroup.patrol(hisClosestAttacker->getPosition());
+					myMutaGroupCD_since = O;
+					RT;
+				}
+			} M(maxDistToGroupCenter > 512) {
+				myMutaGroup.move(groupCenterPos);
+				RT;
+			}
+
+			myMutaGroup.move(S(hisD));
+			RT;
+		} 
+
+		// Managing my units' behaviors...
 		for (U u : C->getUnits()) {
 			if (!u->exists() || !u->isCompleted() || u->isMaelstrommed() || u->isStasised() || u->isLoaded() || u->isStuck()) CT;
-
+			
 			// Updating supply info...
 			w += Q.supplyProvided(); n += Q.supplyRequired();
 			U Z = u GC(BE, 200); Z && !Z IM ? y[Z] = O : w; u->isStartingAttack() ? y[u] = O : w;
@@ -805,6 +815,27 @@ struct ExampleAIModule :AIModule {
 
 			// Managing drones...
 			M(Q == F[40]) {
+				if (GR(S(D), 320, BM).empty()) { // initiate long distance mining
+					if (!u->isCarryingMinerals() && !u->isGatheringMinerals()) {
+						SmartMove(u, S(kn));
+						if (distSq<true>(S(kn), u) < 64 * 64) {
+							if (Unit closestMP = u GC(BM)) {
+								u->gather(closestMP);
+								CT;
+							}
+						}
+					}
+					else if (u->isCarryingMinerals()) {
+						if (u->getLastCommand().getType() == BWAPI::UnitCommandTypes::Return_Cargo) CT;
+						else {
+							u->returnCargo();
+							CT;
+						}
+					}
+
+					CT;
+				}
+
 				if (hisD == NT && u->getID() == myScoutID) { myScoutFound = true; GoScouting(u); CT; }
 
 				if (hisD == NT && CL(134) && CL(40) > 3 && myUnitsCreated[40] - CC(40) <= 1 && O - cs > 240 && !u->isCarryingMinerals() && !u->isCarryingGas()) { // When it is time to scout...
@@ -961,78 +992,54 @@ struct ExampleAIModule :AIModule {
 	}  // N onFrame()
 
 	N onUnitComplete(U u) {
-		if (u->getPlayer() == X->self()) {
-			Q == F[140] ? o(u), o(u) : "a";
+		Q == F[140] ? o(u), o(u) : "a";
 
-			if (Q == F[40]) myUnitsCreated[40]++;
-			M(Q == F[42]) myUnitsCreated[42]++;
-			M(Q == F[46]) myUnitsCreated[46]++;
-			M(Q == F[123]) myUnitsCreated[123]++;
-			M(Q == F[97]) myUnitsCreated[97]++;
-		}
+		if (Q == F[40]) myUnitsCreated[40]++;
+		M(Q == F[42]) myUnitsCreated[42]++;
+		M(Q == F[46]) myUnitsCreated[46]++;
+		M(Q == F[123]) myUnitsCreated[123]++;
+		M(Q == F[97]) myUnitsCreated[97]++;
 	}
 
 	N onUnitDiscover(U u) {
-		if (u->getPlayer() == XE) {
-			V uType = u->getType();
-			if (uType == Terran_Siege_Tank_Siege_Mode) uType = Terran_Siege_Tank_Tank_Mode;
-			
-			if (!uType.isBuilding()) hisUnitIDAndType[u->getID()] = uType;
-			M(uType == Protoss_Photon_Cannon ||
-				uType == Terran_Bunker || uType == Terran_Missile_Turret ||
-				uType == Zerg_Sunken_Colony || uType == Zerg_Spore_Colony)
-				hisBuildingPosAndType[u->getPosition()] = uType;
-		}
+		V uType = u->getType();
+		if (!uType.isBuilding()) hisUnitIDAndType[u->getID()] = uType;
+		M(uType == Protoss_Photon_Cannon ||
+			uType == Terran_Bunker || uType == Terran_Missile_Turret ||
+			uType == Zerg_Sunken_Colony || uType == Zerg_Spore_Colony) 
+			hisBuildingPosAndType[u->getPosition()] = uType;
 	}
 
 	N onUnitDestroy(U u) {
-		if (u->getPlayer() == XE) {
-			V uType = u->getType();
-			if (uType == Terran_Siege_Tank_Siege_Mode) uType = Terran_Siege_Tank_Tank_Mode;
-
-			if (!uType.isBuilding()) {
-				auto it = hisUnitIDAndType.find(u->getID());
-				if (it != hisUnitIDAndType.end())
-					hisUnitIDAndType.erase(it);
-			}
-			M(uType == Protoss_Photon_Cannon ||
-				uType == Terran_Bunker || uType == Terran_Missile_Turret ||
-				uType == Zerg_Sunken_Colony || uType == Zerg_Spore_Colony)
-			{
-				auto it = hisBuildingPosAndType.find(u->getPosition());
-				if (it != hisBuildingPosAndType.end())
-					hisBuildingPosAndType.erase(it);
-			}
+		V uType = u->getType();
+		if (!uType.isBuilding()) {
+			auto it = hisUnitIDAndType.find(u->getID());
+			if (it != hisUnitIDAndType.end())
+				hisUnitIDAndType.erase(it);
+		}
+		M(uType == Protoss_Photon_Cannon ||
+			uType == Terran_Bunker || uType == Terran_Missile_Turret ||
+			uType == Zerg_Sunken_Colony || uType == Zerg_Spore_Colony)
+		{
+			auto it = hisBuildingPosAndType.find(u->getPosition());
+			if (it != hisBuildingPosAndType.end())
+				hisBuildingPosAndType.erase(it);
 		}
 	}
 
 	N onEnd(H u) {
-		// 1st File to Write
-		/*std::ostringstream mfo;
+		std::ostringstream mfo;
 		for (int ki = 0; ki < (W)GS.size(); ++ki) {
 			if (ki % 2 == 0 && G == ki / 2 + 1 || ki % 2 && u && G == (ki + 1) / 2) { mfo << GS[ki] + 1 << dm; CT; }
 			mfo << GS[ki] << dm;
 		}
 
-		ofstream mf("bwapi-data/write/" + XE->getName() + hisRaceName + ".txt", std::ofstream::trunc);
+		ofstream mf("bwapi-data/write/" + XE->getName() + ".txt", std::ofstream::trunc);
 		if (mf)
 		{
 			mf << mfo.str();
 			mf.flush();
 		}
-		mf.close();*/
-
-		// 2nd File to Write
-		std::ostringstream mfo2;
-		for (auto i : hisInfo)
-			mfo2 << i << dm;
-		
-		ofstream mf2("bwapi-data/write/" + XE->getName() + hisRaceName + "_INFO" + ".txt", std::ofstream::trunc);
-		if (mf2)
-		{
-			mf2 << mfo2.str();
-			mf2.flush();
-		}
-		mf2.close();
+		mf.close();
 	}
 };

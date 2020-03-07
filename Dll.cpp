@@ -4,6 +4,7 @@
 //#include "ExampleAIModule.h"
 //#include "Skillet.h"
 //#include "Skill.h"
+//#include "Skill2.h"
 #include "SkillFull.h"
 
 extern "C" __declspec(dllexport) void gameInit(BWAPI::Game* game) { BWAPI::BroodwarPtr = game; }
