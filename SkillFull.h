@@ -3,6 +3,7 @@
 #include "BWEM/bwem.h"
 #include "BWEB/BWEB.h"
 #include "BattleCommander.h"
+#include "Horizon/Horizon.h"
 
 #define A vector
 #define C X->self()
@@ -450,6 +451,7 @@ struct ExampleAIModule :AIModule {
 		X->enableFlag(Flag::UserInput);
 
 		ER == R1 ? hisRaceName = "_P" : (ER == R2 ? hisRaceName = "_T" : hisRaceName = "_Z");
+		
 		ifstream mf("bwapi-data/read/" + XE->getName() + hisRaceName + ".txt");
 		if (mf) {
 			W td = -1; W lc; while (mf >> lc) { ++td; GS[td] = lc; } mf.close();
