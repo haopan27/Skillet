@@ -68,9 +68,6 @@
     <ClCompile Include="BWEM\BaseFinder\BaseFinder.cpp">
       <Filter>BWEM\BaseFinder</Filter>
     </ClCompile>
-    <ClCompile Include="Horizon\Horizon.cpp">
-      <Filter>Horizon</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Hugh.h" />
@@ -153,12 +150,8 @@
     </ClInclude>
     <ClInclude Include="BattleCommander.h" />
     <ClInclude Include="Skill2.h" />
-    <ClInclude Include="Horizon\Horizon.h">
-      <Filter>Horizon</Filter>
-    </ClInclude>
-    <ClInclude Include="Horizon\Maths.h">
-      <Filter>Horizon</Filter>
-    </ClInclude>
+    <ClInclude Include="SkillFuller.h" />
+    <ClInclude Include="PathSearch.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="BWEB">

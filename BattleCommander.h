@@ -7,42 +7,48 @@ using namespace BWAPI;
 using namespace BWAPI::UnitTypes;
 
 inline map<Position, UnitType> hisBuildingPosAndType = {};
-inline map<int, UnitType> hisUnitIDAndType = {};
+struct UnitInfo {
+	UnitType unitType;
+	Position unitPos;
+	std::pair<double, double> unitSpd;
+	int lastFrameVisible;
+};
+inline map<int, UnitInfo> hisUnitIDAndInfo = {};
 
 extern const std::map<std::pair<UnitType, UnitType>, double> unitMatchupTableGen;
 decltype(unitMatchupTableGen) unitMatchupTableGen{ [] {
 std::map<std::pair<UnitType, UnitType>, double> ret;
-ret[std::make_pair(Zerg_Zergling, Protoss_Zealot)] = 2;
-ret[std::make_pair(Zerg_Zergling, Protoss_Dragoon)] = 1.5;
-ret[std::make_pair(Zerg_Zergling, Protoss_Dark_Templar)] = 2.5;
-ret[std::make_pair(Zerg_Zergling, Protoss_Archon)] = 3;
-ret[std::make_pair(Zerg_Zergling, Protoss_Reaver)] = 2;
+ret[std::make_pair(Zerg_Zergling, Protoss_Zealot)] = 4;
+ret[std::make_pair(Zerg_Zergling, Protoss_Dragoon)] = 3;
+ret[std::make_pair(Zerg_Zergling, Protoss_Dark_Templar)] = 5;
+ret[std::make_pair(Zerg_Zergling, Protoss_Archon)] = 6;
+ret[std::make_pair(Zerg_Zergling, Protoss_Reaver)] = 4;
 ret[std::make_pair(Zerg_Zergling, Protoss_Scout)] = 99;
 ret[std::make_pair(Zerg_Zergling, Protoss_Carrier)] = 99;
 ret[std::make_pair(Zerg_Zergling, Protoss_Corsair)] = 99;
-ret[std::make_pair(Zerg_Zergling, Protoss_Photon_Cannon)] = 2;
-ret[std::make_pair(Zerg_Zergling, Terran_Marine)] = 0.375;
-ret[std::make_pair(Zerg_Zergling, Terran_Firebat)] = 1;
-ret[std::make_pair(Zerg_Zergling, Terran_Medic)] = 1.3;
-ret[std::make_pair(Zerg_Zergling, Terran_Ghost)] = 0.375;
-ret[std::make_pair(Zerg_Zergling, Terran_Vulture)] = 4;
-ret[std::make_pair(Zerg_Zergling, Terran_Siege_Tank_Tank_Mode)] = 2.5;
-ret[std::make_pair(Zerg_Zergling, Terran_Siege_Tank_Siege_Mode)] = 2.5;
-ret[std::make_pair(Zerg_Zergling, Terran_Goliath)] = 1.5;
+ret[std::make_pair(Zerg_Zergling, Protoss_Photon_Cannon)] = 4;
+ret[std::make_pair(Zerg_Zergling, Terran_Marine)] = 0.75;
+ret[std::make_pair(Zerg_Zergling, Terran_Firebat)] = 2;
+ret[std::make_pair(Zerg_Zergling, Terran_Medic)] = 2.6;
+ret[std::make_pair(Zerg_Zergling, Terran_Ghost)] = 0.75;
+ret[std::make_pair(Zerg_Zergling, Terran_Vulture)] = 8;
+ret[std::make_pair(Zerg_Zergling, Terran_Siege_Tank_Tank_Mode)] = 5;
+ret[std::make_pair(Zerg_Zergling, Terran_Siege_Tank_Siege_Mode)] = 5;
+ret[std::make_pair(Zerg_Zergling, Terran_Goliath)] = 3;
 ret[std::make_pair(Zerg_Zergling, Terran_Wraith)] = 99;
 ret[std::make_pair(Zerg_Zergling, Terran_Valkyrie)] = 99;
 ret[std::make_pair(Zerg_Zergling, Terran_Battlecruiser)] = 99;
-ret[std::make_pair(Zerg_Zergling, Terran_Bunker)] = 8;
-ret[std::make_pair(Zerg_Zergling, Zerg_Zergling)] = 0.5;
-ret[std::make_pair(Zerg_Zergling, Zerg_Hydralisk)] = 1;
-ret[std::make_pair(Zerg_Zergling, Zerg_Lurker)] = 3;
-ret[std::make_pair(Zerg_Zergling, Zerg_Ultralisk)] = 5.5;
+ret[std::make_pair(Zerg_Zergling, Terran_Bunker)] = 16;
+ret[std::make_pair(Zerg_Zergling, Zerg_Zergling)] = 1;
+ret[std::make_pair(Zerg_Zergling, Zerg_Hydralisk)] = 2;
+ret[std::make_pair(Zerg_Zergling, Zerg_Lurker)] = 6;
+ret[std::make_pair(Zerg_Zergling, Zerg_Ultralisk)] = 11;
 ret[std::make_pair(Zerg_Zergling, Zerg_Mutalisk)] = 99;
 ret[std::make_pair(Zerg_Zergling, Zerg_Scourge)] = 99;
 ret[std::make_pair(Zerg_Zergling, Zerg_Guardian)] = 99;
 ret[std::make_pair(Zerg_Zergling, Zerg_Devourer)] = 99;
-ret[std::make_pair(Zerg_Zergling, Zerg_Sunken_Colony)] = 3;
-ret[std::make_pair(Zerg_Zergling, Zerg_Spore_Colony)] = 0.5;
+ret[std::make_pair(Zerg_Zergling, Zerg_Sunken_Colony)] = 6;
+ret[std::make_pair(Zerg_Zergling, Zerg_Spore_Colony)] = 1;
 
 ret[std::make_pair(Zerg_Hydralisk, Protoss_Zealot)] = 3;
 ret[std::make_pair(Zerg_Hydralisk, Protoss_Dragoon)] = 2;
@@ -186,8 +192,8 @@ int countHisBuildings(UnitType v) {
 
 int countHisUnits(UnitType v) {
 	int res = 0;
-	for (auto u : hisUnitIDAndType) {
-		if (u.second == v)
+	for (auto u : hisUnitIDAndInfo) {
+		if (u.second.unitType == v)
 			res++;
 	}
 	return res;
