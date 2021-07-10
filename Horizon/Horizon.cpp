@@ -49,8 +49,8 @@ namespace Horizon {
                         simRatio = simRatio * 2.0;
 
                     // Add their values to the simulation
-                    enemyGrdSim += enemy.getVisibleGroundStrength() * simRatio;
-                    enemyAirSim += enemy.getVisibleAirStrength() * simRatio;
+                    enemyGrdSim += static_cast<float>(enemy.getVisibleGroundStrength() * simRatio);
+                    enemyAirSim += static_cast<float>(enemy.getVisibleAirStrength() * simRatio);
                 }
             };
 
@@ -77,8 +77,8 @@ namespace Horizon {
                         simRatio = simRatio * 2.0;                    
 
                     // Add their values to the simulation
-                    myGrdSim += ally.getVisibleGroundStrength() * simRatio;
-                    myAirSim += ally.getVisibleAirStrength() * simRatio;
+                    myGrdSim += static_cast<float>(ally.getVisibleGroundStrength() * simRatio);
+                    myAirSim += static_cast<float>(ally.getVisibleAirStrength() * simRatio);
 
                     // Check if air/ground sim needs to sync
                     if (!sync && simRatio > 0.0 && ((unit.getType().isFlyer() && !ally.getType().isFlyer()) || (!unit.getType().isFlyer() && ally.getType().isFlyer())))
@@ -157,7 +157,7 @@ namespace Horizon {
 
         // Here is where you can add custom pathfinding to designate where you expect this Unit to engage its target and how far away the target is
         // Right now this assumes we are going to engage on a linear line to the target
-        engageDist = position.getDistance(engagePosition);
+        engageDist = static_cast<float>(position.getDistance(engagePosition));
         engagePosition = Maths::engagePosition(myUnits[unit]);
     }
 }

@@ -17,7 +17,7 @@ namespace Horizon::Maths {
         const auto speed = log(unit.getSpeed() + avgUnitSpeed);
         const auto armor = 0.25 + float(unit.getType().armor() + unit.getPlayer()->getUpgradeLevel(unit.getType().armorUpgrade()));
         const auto health = log(float(unit.getType().maxHitPoints() + unit.getType().maxShields()));
-        return speed * armor * health;
+        return static_cast<float>(speed * armor * health);
     }
 
     float splashModifier(HorizonUnit& unit) {
@@ -84,7 +84,7 @@ namespace Horizon::Maths {
         const auto splash = splashModifier(unit);
         const auto damage = unit.getGroundDamage();
         const auto cooldown = gWeaponCooldown(unit);
-        return damage > 1.0 ? splash * damage / cooldown : 0.0;
+        return static_cast<float>(damage > 1.0 ? splash * damage / cooldown : 0.0);
     }
 
     float visGroundStrength(HorizonUnit& unit) {
@@ -153,7 +153,7 @@ namespace Horizon::Maths {
         const auto splash = splashModifier(unit);
         const auto damage = unit.getAirDamage();
         const auto cooldown = aWeaponCooldown(unit);
-        return  damage > 1.0 ? splash * damage / cooldown : 0.0;
+        return static_cast<float>(damage > 1.0 ? splash * damage / cooldown : 0.0);
     }
 
     float visAirStrength(HorizonUnit& unit) {
