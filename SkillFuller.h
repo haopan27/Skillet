@@ -710,98 +710,7 @@ struct ExampleAIModule :AIModule {
 
 		numStartingLocs = X->getStartLocations().size();
 
-		if (enemyName.compare("Aurelien Lermant") == 0
-			|| enemyName.compare("Marine Hell") == 0
-			|| enemyName.compare("KaonBot") == 0
-			|| enemyName.compare("EggBot") == 0
-			|| enemyName.compare("Yuanheng Zhu") == 0
-			|| enemyName.compare("KangarooBot") == 0 // untested
-			|| enemyName.compare("tscmooz") == 0
-			|| enemyName.compare("MegaBot2017") == 0
-			|| enemyName.compare("Andrew Smith") == 0
-			//|| enemyName.compare("") == 0
-			) {
-			G = 1; // 4 Pool
-		} 
-		else if (enemyName.compare("Stone") == 0
-			|| enemyName.compare("Chris Coxe") == 0
-			|| enemyName.compare("Dave Churchill") == 0 && XR == R3
-			|| enemyName.compare("PurpleSwarm") == 0 || enemyName.compare("PurpleDestiny") == 0 && XR == R3
-			|| enemyName.compare("legacy") == 0 && XR == R3
-			|| enemyName.compare("McRaveZ") == 0
-			) {
-			G = 1;
-			me7Pool = true;
-		} 
-		else if (enemyName.compare("WuliBot") == 0
-			|| enemyName.compare("Black Crow") == 0
-			|| enemyName.compare("KasoBot") == 0 
-			|| enemyName.compare("Matej Istenik") == 0 
-			|| enemyName.compare("Tomas Cere") == 0 
-			|| enemyName.compare("GuiBot") == 0 // untested
-			|| enemyName.compare("Ecgberht") == 0
-			|| enemyName.compare("Hannes Bredberg") == 0
-			|| enemyName.compare("Roman Danielis") == 0
-			|| enemyName.compare("PurpleSpirit") == 0 || enemyName.compare("PurpleDestiny") == 0 && XR == R2
-			|| enemyName.compare("WillBot") == 0
-			|| enemyName.compare("Prism Cactus") == 0 || enemyName.compare("Toothpick Cactus") == 0
-			|| enemyName.compare("NiteKatP") == 0 // untested
-			|| enemyName.compare("Simon Prins") == 0
-			|| enemyName.compare("Junkbot") == 0
-			|| enemyName.compare("Microwave") == 0 // untested
-			|| enemyName.compare("StyxZ") == 0
-			|| enemyName.compare("Dave Churchill") == 0 && XR != R3 
-			|| enemyName.compare("legacy") == 0 && XR != R3 // Smorc through vs carriers
-			|| enemyName.compare("MadMixT") == 0 || enemyName.compare("MadMixR") == 0 && XR == R2
-			|| enemyName.compare("Slater") == 0
-			|| enemyName.compare("NLPRbot") == 0
-			|| enemyName.compare("Florian Richoux") == 0
-			|| enemyName.compare("Lukas Moravec") == 0
-			) {
-			G = 2;
-
-			if (enemyName.compare("legacy") == 0) {
-				myMaxSunks = 6; 
-				if (XR == R2) lurkerSafeBurrowRange = 256; // Extra range to be safe against stimmed marines
-			}
-			else if (enemyName.compare("Slater") == 0
-				) {
-				myMaxSunks = 4;
-			}
-			else if (enemyName.compare("NLPRbot") == 0
-				) {
-				myMaxSunks = 3;
-				myMaxSpores = 2;
-			}
-			else if (enemyName.compare("Dave Churchill") == 0 
-				|| enemyName.compare("WuliBot") == 0
-				|| enemyName.compare("Black Crow") == 0
-				|| enemyName.compare("StyxZ") == 0
-				|| enemyName.compare("Microwave") == 0
-				|| enemyName.compare("Lukas Moravec") == 0
-				) myMaxSunks = 6;
-			else if(enemyName.compare("Ecgberht") == 0
-				|| enemyName.compare("Junkbot") == 0
-				|| enemyName.compare("Roman Danielis") == 0
-				|| enemyName.compare("GuiBot") == 0
-				) 
-				myMaxSpores = 1;
-		} 
-		else if (enemyName.compare("Sungguk Cha") == 0) {
-			G = 1;
-
-			if (myRecentStats[numMyRecentStats - 1] == 21 || myRecentStats[numMyRecentStats - 1] == 10)
-			{
-				G = 2; myMaxSunks = 2;
-			}
-		}
-		else if (enemyName.compare("Sijia Xu") == 0) {
-			G = 2; myMaxSunks = 3; myMaxSpores = 1;
-
-			if (myRecentStats[numMyRecentStats - 1] == 20 && myRecentStats[numMyRecentStats - 2] == 20
-				|| myRecentStats[numMyRecentStats - 1] == 21) G = 1;
-		}
-		else G = 5; // enemy name is unknown..
+		
 		
 		/// vvv fix things here vvv
 		//myMaxSunks = 4;
@@ -1566,6 +1475,10 @@ struct ExampleAIModule :AIModule {
 										S hisNatCenter = hisNatTL + S(64, 48);
 										if (distSq2(u GP, hisNatCenter) > 900 * 1024) {
 											SmartMove(u, hisNatCenter);
+											continue;
+										}
+										else {
+											if (!u->isHoldingPosition()) u->holdPosition();
 											continue;
 										}
 									}
