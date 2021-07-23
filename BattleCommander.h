@@ -413,7 +413,7 @@ std::vector<UnitType> myChampionGen(std::vector<UnitType>& actions, int champion
 
 	for (int i = 0; i < championSize; ++i) {
 		int randomIndex = randomIntGen(actionsCopy.size());
-		UnitType randomAction = actionsCopy[randomIndex];
+		UnitType randomAction = actionsCopy[randomIndex]; // Causes a crash on Jade (map)
 		champion.push_back(randomAction);
 		if (randomAction.isBuilding()) // As Zerg, train no more than 1 building at a time
 			actionsCopy.erase(actionsCopy.begin() + randomIndex);
