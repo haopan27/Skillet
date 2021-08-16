@@ -73,12 +73,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Hugh.h" />
-    <ClInclude Include="OhFish.h" />
-    <ClInclude Include="PurpleEssence.h" />
     <ClInclude Include="Skill.h" />
     <ClInclude Include="Skillet.h" />
-    <ClInclude Include="SkillFull.h" />
     <ClInclude Include="BWEB\Block.h">
       <Filter>BWEB</Filter>
     </ClInclude>
@@ -152,7 +148,6 @@
       <Filter>BWEM\BaseFinder</Filter>
     </ClInclude>
     <ClInclude Include="BattleCommander.h" />
-    <ClInclude Include="Skill2.h" />
     <ClInclude Include="SkillFuller.h" />
     <ClInclude Include="PathSearch.h" />
     <ClInclude Include="Horizon\Horizon.h">

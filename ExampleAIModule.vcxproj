@@ -149,13 +149,8 @@
     <ClInclude Include="BWEM\tiles.h" />
     <ClInclude Include="BWEM\utils.h" />
     <ClInclude Include="BWEM\winutils.h" />
-    <ClInclude Include="Hugh.h" />
-    <ClInclude Include="OhFish.h" />
-    <ClInclude Include="PurpleEssence.h" />
     <ClInclude Include="Skill.h" />
-    <ClInclude Include="Skill2.h" />
     <ClInclude Include="Skillet.h" />
-    <ClInclude Include="SkillFull.h" />
     <ClInclude Include="SkillFuller.h" />
   </ItemGroup>
   <ItemGroup>

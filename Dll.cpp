@@ -1,9 +1,5 @@
 #include <BWAPI.h>
 #include <Windows.h>
-
-//#include "ExampleAIModule.h"
-//#include "Skillet.h"
-//#include "Skill2.h"
 #include "SkillFuller.h"
 
 
