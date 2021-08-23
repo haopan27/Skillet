@@ -1061,7 +1061,7 @@ struct ExampleAIModule :AIModule {
 			}
 		}
 		else if (enemyName.compare("Dragon") == 0) { // Reactive
-			G = 3; me9PoolLing = true; // me3HLing = 1;
+			G = 3; //me9PoolLing = true; // me3HLing = 1;
 
 			/*if (myRecentStats[numMyRecentStats - 1] == 30
 				|| myRecentStats[numMyRecentStats - 1] == 11) {
@@ -1111,14 +1111,15 @@ struct ExampleAIModule :AIModule {
 			}*/
 		}
 		else if (enemyName.compare("MadMixP") == 0) { // Reactive
-			if (thisMapIndex == 1 // cannon fire covers nat
-				// || thisMapIndex == 7 // highground nat
-				// || thisMapIndex == 10 // cannon fire covers nat
-				) { G = 3; me9PoolLing = true; }
-			else {
-				if (myRecentStats[numMyRecentStats - 1] == 60 || myRecentStats[numMyRecentStats - 1] == 11) G = 1;
-				else { G = 6; me2HHydra = true; }
-			}
+			//if (thisMapIndex == 1 // cannon fire covers nat
+			//	// || thisMapIndex == 7 // highground nat
+			//	// || thisMapIndex == 10 // cannon fire covers nat
+			//	) { G = 3; me9PoolLing = true; }
+			//else {
+			//	if (myRecentStats[numMyRecentStats - 1] == 60 || myRecentStats[numMyRecentStats - 1] == 11) G = 1;
+			//	else { G = 6; me2HHydra = true; }
+			//}
+			G = 6; me2HHydra = true;
 		}
 		else if (enemyName.compare("MadMixR") == 0 && XE->getRace() == Races::Protoss) { // Reactive
 			if (thisMapIndex == 1) { G = 3; me9PoolLing = true; }
@@ -1177,8 +1178,9 @@ struct ExampleAIModule :AIModule {
 			meSmartMuta = 1;
 		}
 		else if (enemyName.compare("krasi0P") == 0) {
-			if (myRecentStats[numMyRecentStats - 1] == 30 || myRecentStats[numMyRecentStats - 1] == 11) { G = 1; }
-			else { G = 3;  me3HLing = 21; }
+			/*if (myRecentStats[numMyRecentStats - 1] == 30 || myRecentStats[numMyRecentStats - 1] == 11) { G = 1; }
+			else { G = 3;  me3HLing = 21; }*/
+			G = 3;  me3HLing = 21;
 		}
 		else if (enemyName.compare("Steamhammer") == 0) {
 			G = 1; me7Pool = true;
