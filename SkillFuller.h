@@ -1137,13 +1137,14 @@ struct ExampleAIModule :AIModule {
 			//G = 4; myMaxSunks = 6;
 		}
 		else if (enemyName.compare("Proxy") == 0) {
-			//G = 2; myMaxSunks = 2; meGetMuta = true; //myMaxSpores = 1;
-			//if (myRecentStats[numMyRecentStats - 1] == 20) { G = 3; me9PoolLing = true; }
-			G = 3; me9PoolLing = true;
+			if (myRecentStats[numMyRecentStats - 1] == 20 || myRecentStats[numMyRecentStats - 1] == 31) { G = 3; me9PoolLing = true; }
+			else { G = 2; myMaxSunks = 2; meGetMuta = true; /*myMaxSpores = 1;*/ }
+			//G = 3; me9PoolLing = true;
 		}
 		else if (enemyName.compare("Andrew Smith") == 0) {
-			G = 1;
-			if (myRecentStats[numMyRecentStats - 1] == 10 || myRecentStats[numMyRecentStats - 1] == 31) { G = 3; me9PoolLing = true; }
+			//G = 1;
+			if (myRecentStats[numMyRecentStats - 1] == 20 || myRecentStats[numMyRecentStats - 1] == 31) { G = 3; /*me9PoolLing = true;*/ }
+			else { G = 2; meLurkerRush = true; myMaxSunks = 0; }
 		}
 		else if (enemyName.compare("CherryPiSSCAIT2017") == 0) {
 			G = 3; me9PoolLing = true;
