@@ -118,12 +118,8 @@
     <ClCompile Include="BWEM\utils.cpp" />
     <ClCompile Include="BWEM\winutils.cpp" />
     <ClCompile Include="Dll.cpp" />
-    <ClCompile Include="Horizon\Horizon.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Horizon\Horizon.h" />
-    <ClInclude Include="Horizon\Maths.h" />
-    <ClInclude Include="PathSearch.h" />
     <ClInclude Include="BattleCommander.h" />
     <ClInclude Include="BWEB\Block.h" />
     <ClInclude Include="BWEB\BWEB.h" />
@@ -149,8 +145,6 @@
     <ClInclude Include="BWEM\tiles.h" />
     <ClInclude Include="BWEM\utils.h" />
     <ClInclude Include="BWEM\winutils.h" />
-    <ClInclude Include="Skill.h" />
-    <ClInclude Include="Skillet.h" />
     <ClInclude Include="SkillFuller.h" />
   </ItemGroup>
   <ItemGroup>

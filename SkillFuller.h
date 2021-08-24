@@ -4,8 +4,7 @@
 #include "BWEB/BWEB.h"
 #include "BattleCommander.h"
 #include <chrono>
-#include "PathSearch.h"
-//#include "Horizon/Horizon.h"
+
 
 using namespace std;
 using namespace BWAPI;
@@ -48,7 +47,6 @@ std::string hisInfoLastGame[360] = { "-" };
 const int secondsPerTick = 10;
 const int framesPerTick = secondsPerTick * 24;
 float averageFrameTime = 0.0;
-int lurkerSafeBurrowRange = 192;
 const int numMyRecentStats = 20;
 int myRecentStats[numMyRecentStats] = { 0 };
 vector<UnitType> hisTypesToCheck;
@@ -202,8 +200,6 @@ TilePosition FindBuildingPlacementAroundAPoint(UnitType buildingType, TilePositi
 		}
 	}
 
-	//if (buildingType == F[135] && !distAndTL.empty()) return distAndTL.begin()->second;
-
 	// Resort to the vanilla finder if everything above fails
 	return X->getBuildLocation(buildingType, searchCenter, 18);
 } // TilePosition FindBuildingPlacementAroundAPoint(...)
@@ -276,14 +272,14 @@ Unit FindTarget(Unit attacker)
 
 bool LurkerCautiousBurrow(Unit u) {
 	//if (GR(u GP, u->getType().sightRange(), BE && B(Sieged)).empty())
-	if (Unit hisClosestAttacker = u GC(BE && FCA && !B(Flying) && !BW, lurkerSafeBurrowRange))
+	if (Unit hisClosestAttacker = u GC(BE && FCA && !B(Flying) && !BW, 192))
 		if (!u->isBurrowed()) {
 			if (u->getLastCommand().getType() != UnitCommandTypes::Burrow) u->burrow();
 			return true;
 		}
 
 	if (XE->getRace() == Races::Terran) {
-		if (!GR(u GP, lurkerSafeBurrowRange, BE && (FGT == F[117] || B(Sieged))).empty()) // Burrow vs bunker
+		if (!GR(u GP, 192, BE && (FGT == F[117] || B(Sieged))).empty()) // Burrow vs bunker
 			if (!u->isBurrowed()) {
 				if (u->getLastCommand().getType() != UnitCommandTypes::Burrow) u->burrow();
 				return true;
@@ -338,15 +334,7 @@ void SmartAttack(Unit attacker, Unit target)
 		return;
 	}
 
-	// if we have issued a command to this unit already this frame, ignore this one
-	//if (attacker->getLastCommandFrame() >= O - 5) return;
-
-	// Data from: https://docs.google.com/spreadsheets/d/1bsvPvFil-kpvEUfSG74U3E5PLSTC02JxSkiR8QdLMuw/edit#gid=0
-	//int attackCD = 10;
-
 	UnitCommand currentCommand(attacker->getLastCommand()); // get the unit's current command
-	//if (currentCommand.getType() == UnitCommandTypes::Attack_Unit &&	currentCommand.getTarget() == target
-	//	&& (O - attacker->getLastCommandFrame() <= attackCD)) return;
 
 	if (target->isFlying() && attacker->getAirWeaponCooldown() != 0 || !target->isFlying() && attacker->getGroundWeaponCooldown() != 0) return;
 
@@ -665,15 +653,6 @@ bool meSmash() {
 	return false;
 }
 
-template<typename Repr = float, typename Period = std::milli>
-struct ScopeTimer {
-	ScopeTimer(Repr &output) : output{ output } { }
-	~ScopeTimer() { output = std::chrono::duration<Repr, Period>(std::chrono::steady_clock::now() - start).count(); }
-private:
-	std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-	Repr &output;
-	ScopeTimer& operator=(const ScopeTimer&);
-};
 
 Position vecToPos(vector<int> vecIn) {
 	return Position(TilePosition(vecIn.back(), vecIn.front()));
@@ -1009,24 +988,10 @@ struct ExampleAIModule :AIModule {
 	} // onStart()
 
 	void onFrame() {
-		//float time; { // Timer starts
-			//ScopeTimer<float> timer{ time };
-
 		// Initializing...
 		O = X->getFrameCount();
 		bool myNatBuilt = !GR(knCenter, 160, BO && BR).empty();
 		bool my3rdBuilt = !GR(k3Center, 160, BO && BR).empty();
-		
-		// >>>>>>>>>> Display >>>>>>>>>
-		/*if (O % 24 == 0) {
-			X << F[-1] << endl;
-		}*/
-		// <<<<<<<<<<< Display <<<<<<<<<<
-
-		// Find the index of an element in `F` (vector of all unit types)
-		/*auto it = find(F.begin(), F.end(), Zerg_Lurker_Egg);
-		if (it != F.end() && O % 24 == 0) X << distance(F.begin(), it) << endl;*/
-		//if (O % 120 == 0) X << F[91] << endl;
 
 		if (hisD != NT) {
 			if (hisStartingInd == 0) hisStartingInd = GetStartingInd(hisD);
@@ -1083,8 +1048,6 @@ struct ExampleAIModule :AIModule {
 			}
 		}
 
-		/// Grid info
-		int gridInfo[128][128] = { 0 };
 		if (hisDKilled && me4or5Pool) {
 			if (myAttackStartedSince && O - myAttackStartedSince > 720) myAttackStartedSince = 0;
 			if (myAttackStartedSince == 0 && meSmash()) myAttackStartedSince = O;
@@ -1100,102 +1063,6 @@ struct ExampleAIModule :AIModule {
 				}
 			}
 		}
-
-		if (0) { // Pathfind analysis
-			// Update `gridInfo`
-			for (int i = 0; i < 128; ++i) { // X direction
-				for (int j = 0; j < 128; ++j) { // Y direction
-					Position posIJ((i + 1) * 32 - 16, (j + 1) * 32 - 16);
-					Color colorIJ = Colors::Black;
-
-					if (X->getGroundHeight(TilePosition(posIJ))) colorIJ = Colors::Grey;
-
-					if (XE->getRace() == Races::Protoss) { // Protoss units
-						// Mark enemy workers
-						if (any_of(hisUnitIDAndInfo.begin(), hisUnitIDAndInfo.end(), [&posIJ](const auto & u)
-						{ return u.second.unitType == Protoss_Probe && distSq2(u.second.unitPos, posIJ) <= 25 * 1024; })) colorIJ = Colors::Green;
-
-						// Mark enemy ground-attack-only ground units
-						if (any_of(hisUnitIDAndInfo.begin(), hisUnitIDAndInfo.end(), [&posIJ](const auto & u)
-						{ return u.second.unitType == Protoss_Zealot && distSq2(u.second.unitPos, posIJ) <= 4 * 1024; })) colorIJ = Colors::Yellow;
-
-						// Mark enemy dual-attack ground units
-						if (any_of(hisUnitIDAndInfo.begin(), hisUnitIDAndInfo.end(), [&posIJ](const auto & u)
-						{ return u.second.unitType == Protoss_Dragoon
-							&& distSq2(Position(u.second.unitPos.x + int(u.second.unitSpd.first * 48),
-								u.second.unitPos.y + int(u.second.unitSpd.second * 48)), posIJ) <= 64 * 1024; })) colorIJ = Colors::Teal;
-
-						if (any_of(hisUnitIDAndInfo.begin(), hisUnitIDAndInfo.end(), [&posIJ](const auto & u)
-						{ return u.second.unitType == Protoss_Dragoon && distSq2(u.second.unitPos, posIJ) <= 64 * 1024; })) colorIJ = Colors::Blue;
-
-						// Mark enemy buildings
-						if (any_of(hisBuildingPosAndType.begin(), hisBuildingPosAndType.end(), [&posIJ](const auto & u)
-						{ return u.second == Protoss_Photon_Cannon && distSq2(u.first, posIJ) <= 100 * 1024; })) colorIJ = Colors::Red;
-					}
-
-					if (colorIJ != Colors::Black) {
-						//  Goon					|| Goon seconds later	   || Cannon
-						if (colorIJ == Colors::Blue || colorIJ == Colors::Teal || colorIJ == Colors::Red) gridInfo[j][i] = 1;
-
-						// Visualization
-						//X->drawBoxMap(posIJ - Position(16, 16), posIJ + Position(16, 16), colorIJ, false);
-						//X->drawLineMap(posIJ - Position(16, 16), posIJ + Position(16, 16), colorIJ);
-					}
-				} // Y direction
-			} // X direction
-			// Enable/Disable updating `gridInfo`
-
-			/// Mark Waypoints
-			// His Buildings
-			const int radialDist = 448;
-			const double startAngle = PI / 4;
-			const double deltaAngle = PI / 2;
-
-			for (auto u : hisBuildingPosAndType) {
-				if (u.second == Protoss_Photon_Cannon) {
-					for (double iAngle = startAngle; iAngle < 2 * PI; iAngle += deltaAngle)
-					{
-						Position p12 = u.first + Position(static_cast<int>(radialDist * cos(iAngle)), static_cast<int>(radialDist * sin(iAngle)));
-
-						if (myWayPointsAndStatus[p12] == 0) myWayPointsAndStatus[p12] = 1;
-						if (myWayPointsAndStatus[p12] == 1 && !GR(p12, 32, Filter::IsOwned && FGT == F[0]).empty()) {
-							myWayPointsAndStatus[p12] = 2;
-							wayPointsExpended++;
-						}
-
-						X->drawCircleMap(p12, 8, Colors::White, true);
-						X->drawTextMap(p12 + Position(0, 12), "%cwaypointStatus: %d", Text::White, myWayPointsAndStatus[p12]);
-					}
-				}
-			}
-
-			// His Units
-			myWayPointsAndStatus2.clear(); // reset to account for unit movement
-			for (auto u : hisUnitIDAndInfo) {
-				if (u.second.unitType == Protoss_Dragoon) {
-					for (double iAngle = startAngle; iAngle < 2 * PI; iAngle += deltaAngle)
-					{
-						Position p12 = u.second.unitPos + Position(static_cast<int>(radialDist * cos(iAngle)), static_cast<int>(radialDist * sin(iAngle)));
-
-						if (myWayPointsAndStatus2[p12] == 0) myWayPointsAndStatus2[p12] = 1;
-						if (myWayPointsAndStatus2[p12] == 1 && !GR(p12, 32, Filter::IsOwned && FGT == F[0]).empty()) {
-							myWayPointsAndStatus2[p12] = 2;
-							wayPointsExpended++;
-						}
-
-						X->drawCircleMap(p12, 8, Colors::White, true);
-						X->drawTextMap(p12 + Position(0, 12), "%cwaypointStatus: %d", Text::White, myWayPointsAndStatus2[p12]);
-					}
-				}
-			}
-
-			// Display intel on enemy units
-			for (auto u : hisUnitIDAndInfo)
-				if (u.second.unitType == Protoss_Dragoon) { // Show movement speed
-					X->drawTextMap(u.second.unitPos - Position(0, 16), "%cspdX: %.2f", Text::White, u.second.unitSpd.first);
-					X->drawTextMap(u.second.unitPos, "%cspdY: %.2f", Text::White, u.second.unitSpd.second);
-				}
-		} // Enable/disable gridInfo updating and pathfind analysis
 
 		// COEP Starts
 		if (meCOEP) {
@@ -1556,80 +1423,6 @@ struct ExampleAIModule :AIModule {
 		// Manage my units' behaviors...
 		for (Unit u : C->getUnits()) {
 			if (!u->exists() || !u->isCompleted() || u->isMaelstrommed() || u->isStasised() || u->isLoaded() || u->isStuck()) continue;
-
-			if (Q == Terran_Barracks || u->getBuildType() == Terran_Barracks) X << "RaxTL: " << u->getTilePosition() << endl;
-			if (Q == Terran_Bunker || u->getBuildType() == Terran_Bunker) X << "BunkerTL: " << u->getTilePosition() << endl;
-
-			if (Q == F[0]) { // Terran_Wraith
-				if (hisD != NT && !hisDKilled) {
-					Position uPos = u GP;
-					Position uNextPos = hisDCenter;
-					const int pathfindMethod = 1;
-
-					if (pathfindMethod == 2) { // Based on waypoints
-						Position uBestPos = Positions::None;
-						int uBestScore = 99999999; // the smaller, the better
-						for (auto v : myWayPointsAndStatus)
-							if (v.second && v.second != 2) // if valid + NOT visited recently..
-							{
-								int thisScore = distSq2(uPos, v.first);
-								if (thisScore < uBestScore)
-								{
-									uBestScore = thisScore;
-									uBestPos = v.first;
-								}
-							}
-
-						if (uBestPos != Positions::None && wayPointsExpended < 2) {
-							X->drawCircleMap(uBestPos, 16, Colors::Blue, false);
-							uNextPos = uBestPos;
-						}
-
-						// if there are enemy units nearby..
-						if (any_of(hisUnitIDAndInfo.begin(), hisUnitIDAndInfo.end(), [&uPos](const auto & u)
-						{ return u.second.unitType == Protoss_Dragoon
-							&& distSq2(Position(u.second.unitPos.x + int(u.second.unitSpd.first * 48),
-								u.second.unitPos.y + int(u.second.unitSpd.second * 48)), uPos) <= 64 * 1024; })) {
-
-							int uBestScore = 99999999; // the smaller, the better
-							for (auto v : myWayPointsAndStatus2)
-								if (v.second && v.second != 2) // if valid + NOT visited recently..
-								{
-									int thisScore = distSq2(uPos, v.first);
-									if (thisScore < uBestScore)
-									{
-										uBestScore = thisScore;
-										uBestPos = v.first;
-									}
-								}
-
-							if (uBestPos != Positions::None)
-								uNextPos = uBestPos;
-						}
-					}
-					else { // Using more conventional approaches such as vector*
-						vector<int> adjUPos = getNearestGoodTile(posToVec(TilePosition(uPos.x / 32, uPos.y / 32)), gridInfo);
-
-						uNextPos = vecToPos(runPathSearch(gridInfo, adjUPos, posToVec(hisD), false, false, false));
-						X->drawCircleMap(vecToPos(adjUPos), 4, Colors::Purple, true);
-						X->drawLineMap(uPos, vecToPos(adjUPos), Colors::Purple);
-					}
-
-					X->drawCircleMap(uNextPos, 8, Colors::Blue, true);
-					X->drawLineMap(uPos, uNextPos, Colors::Blue);
-
-					if (u->getLastCommand().getType() != UnitCommandTypes::Move || u->getLastCommand().getTargetPosition() != uNextPos)
-						u->move(uNextPos);
-
-					if (distSq2(uPos, hisDCenter) < 49 * 1024)
-						DO_ONCE{
-						X << ">>> My HP: " << u->getHitPoints() << ", elapsed seconds: " << O / 24 << endl;
-						X->sendText(std::to_string(averageFrameTime * 24 / float(O)).c_str(), "%cavg frame time (ms): %.1f\n");
-					}
-				}
-				continue;
-			} // if this is Terran_Wraith
-
 
 			// Closest enemy to this unit within ~ 6 * 32 range
 			Unit Z = u GC(BE, 200); 
@@ -2515,14 +2308,6 @@ struct ExampleAIModule :AIModule {
 		} // for (Unit u : C->getUnits())
 
 		if (!myScoutFound) myScoutID = -99;
-			/// Display the time spent per frame
-			//if (O % 24 == 0) { 
-			//	averageFrameTime += time;
-			//	//X << "Elapsed seconds: " << O / 24 << ", ms taken: " << std::to_string(time) << endl;
-			//	//X->sendText(std::to_string(time).c_str(), "\n"); 
-			//}
-
-		//} // Timer ends
 	}  // onFrame()
 
 	void onUnitMorph(Unit u) {
@@ -2586,38 +2371,10 @@ struct ExampleAIModule :AIModule {
 				if (it != hisBuildingPosAndType.end())
 					hisBuildingPosAndType.erase(it);
 			}
-		} else if(u->getPlayer() == C) {
-			// ...
 		}
 	}
 
-	/*void onUnitHide(Unit u) {
-		if (u->getPlayer() == XE) {
-			UnitType uType = Q;
-			if (uType == Terran_Siege_Tank_Siege_Mode) uType = Terran_Siege_Tank_Tank_Mode;
-
-			if (!uType.isBuilding()) {
-				hisUnitIDAndInfo[u->getID()].unitType = uType;
-				hisUnitIDAndInfo[u->getID()].unitPos = u GP;
-				hisUnitIDAndInfo[u->getID()].unitSpd = std::make_pair(u->getVelocityX(), u->getVelocityY());
-			}
-		}
-	}*/
-
 	void onEnd(bool u) {
-		/// Special
-		/*std::ostringstream mfoX;
-		for (int i = 0; i < 20; ++i)
-			mfoX << GS[i] << "\n";
-
-		ofstream mfX("bwapi-data/write/" + enemyName + enemyRace + "_B" + ".txt", std::ofstream::trunc);
-		if (mfX)
-		{
-			mfX << mfoX.str();
-			mfX.flush();
-		}
-		mfX.close();*/
-
 		// 1st File to Write
 		std::ostringstream mfo;
 		int numStats = sizeof(GS) / sizeof(GS[0]);
