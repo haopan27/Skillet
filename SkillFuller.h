@@ -124,9 +124,6 @@ Position hisDCenter = NP, hisNatCenter = NP;
 vector<UnitType> myOrders = {};
 UnitType m_lastUnitType = UnitTypes::None;
 int m_orderRequestedSince = 0;
-map<Position, int> myWayPointsAndStatus; // His buildings
-map<Position, int> myWayPointsAndStatus2; // His units
-int wayPointsExpended = 0;
 int numStartingLocs = 0;
 int myMaxSunks = 1;
 int myMaxSpores = 0;
@@ -665,32 +662,6 @@ vector<int> posToVec(TilePosition posIn) {
 	return res;
 }
 
-vector<int> getNearestGoodTile(vector<int> posIn, int gridIn[][128]) {
-	// Return if this is already a good tile
-	int posInX = posIn.front();
-	int posInY = posIn.back();
-	if (gridIn[posInX][posInY] == 0) return posIn;
-
-	// Spiral search around `posIn`
-	for (int r = 1; r <= 128; ++r) {
-		map<int, vector<int>> scoreAndPos;
-		for (int i = posInX - r; i <= posInX + r; ++i)
-			for (int j = posInY - r; j <= posInY + r; ++j)
-				if (i >= 0 && i < X->mapWidth() && j >= 0 && j < X->mapHeight() && gridIn[i][j] == 0) // Within the map and is good
-					if (i == posInX - r || i == posInX + r || j == posInY - r || j == posInY + r) { // Only points from the surrounding square frame
-						vector<int> posIJ = { i, j };
-						scoreAndPos[distSq2(Position(i, j), Position(posInX, posInY))] = posIJ;
-					}
-					
-		if (!scoreAndPos.empty())
-			return scoreAndPos.begin()->second;
-	}
-
-	vector<int> myStartingTopLeft = { D.x, D.y };
-	return myStartingTopLeft;
-}
-
-
 int GetStartingInd(TilePosition startingLoc) {
 	switch (thisMapIndex) {
 	case 0: if (startingLoc == TilePosition(117, 13)) return thisMapIndex * 10 + 1;
@@ -906,8 +877,8 @@ struct ExampleAIModule :AIModule {
 
 		
 		/// vvv fix things here vvv
-		//G = 6;
-		//myMaxSunks = 6;
+		G = 2;
+		myMaxSunks = 6;
 		//myMaxSpores = 1;
 		//me7Pool = true;
 		//me3HLing = 1;
