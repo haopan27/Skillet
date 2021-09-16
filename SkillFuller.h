@@ -619,7 +619,7 @@ bool meSmash() {
 		if (me987Hydra == 2 && myUnitsCreated[37] < 3) return false;
 
 		if (meGetMuta) {
-			if (CC(133) && myUnitsCreated[42] < 18) return false;
+			if (CC(133) && myUnitsCreated[42] < 27) return false;
 		}
 
 		return true;
@@ -958,13 +958,11 @@ struct ExampleAIModule :AIModule {
 			|| enemyName.compare("Junkbot") == 0
 			|| enemyName.compare("Dave Churchill") == 0 && XE->getRace() != Races::Zerg
 			|| enemyName.compare("legacy") == 0 // Smorc through vs carriers
-			|| enemyName.compare("MadMixT") == 0 || enemyName.compare("MadMixR") == 0 && XE->getRace() == Races::Terran
 			|| enemyName.compare("Slater") == 0
 			|| enemyName.compare("Florian Richoux") == 0
 			|| enemyName.compare("Lukas Moravec") == 0
 			|| enemyName.compare("Bryan Weber") == 0
 			|| enemyName.compare("MegaBot2017") == 0
-			|| enemyName.compare("CUBOT") == 0
 			) {
 			G = 2;
 
@@ -972,10 +970,6 @@ struct ExampleAIModule :AIModule {
 				myMaxSunks = 6;
 				if (XE->getRace() == Races::Terran) lurkerSafeBurrowRange = 256; // Extra range to be safe against stimmed marines
 				if (XE->getRace() == Races::Zerg) meGetMuta = true;
-			}
-			else if (enemyName.compare("CUBOT") == 0) {
-				myMaxSunks = 3;
-				meGetMuta = true;
 			}
 			else if (enemyName.compare("Slater") == 0
 				|| enemyName.compare("MegaBot2017") == 0) {
@@ -985,7 +979,6 @@ struct ExampleAIModule :AIModule {
 				myMaxSunks = 2;
 				myMaxSpores = 1;
 			}
-			
 			else if (enemyName.compare("Dave Churchill") == 0
 				|| enemyName.compare("WuliBot") == 0
 				|| enemyName.compare("Black Crow") == 0
@@ -994,6 +987,12 @@ struct ExampleAIModule :AIModule {
 			else if (enemyName.compare("Junkbot") == 0
 				|| enemyName.compare("Roman Danielis") == 0)
 				myMaxSpores = 1;
+		}
+		else if (enemyName.compare("MadMixT") == 0 || enemyName.compare("MadMixR") == 0 && XE->getRace() == Races::Terran) {
+			G = 2; meLurkerRush = true; myMaxSunks = 0;
+		}
+		else if (enemyName.compare("CUBOT") == 0) {
+			G = 3; me9PoolLing = true;
 		}
 		else if (enemyName.compare("StyxZ") == 0) {
 			if (myRecentStats[numMyRecentStats - 1] == 20 || myRecentStats[numMyRecentStats - 1] == 11)
@@ -1025,16 +1024,16 @@ struct ExampleAIModule :AIModule {
 			}
 		}
 		else if (enemyName.compare("Sijia Xu") == 0) { // Reactive
-			G = 2; myMaxSunks = 3; myMaxSpores = 1;
+			if (myRecentStats[numMyRecentStats - 1] / 10 == 2) G = 1;
+			else { G = 2; myMaxSunks = 3; myMaxSpores = 1; }
 
-			if (myRecentStats[numMyRecentStats - 1] == 20 && myRecentStats[numMyRecentStats - 2] == 20
-				|| myRecentStats[numMyRecentStats - 1] == 21) G = 1;
+			/*if (myRecentStats[numMyRecentStats - 1] == 20 && myRecentStats[numMyRecentStats - 2] == 20
+				|| myRecentStats[numMyRecentStats - 1] == 21) G = 1;*/
 		}
 		else if (enemyName.compare("Soeren Klett") == 0
 			|| enemyName.compare("ICELab") == 0
 			|| enemyName.compare("tscmoop2") == 0
 			|| enemyName.compare("Tomas Vajda") == 0
-			|| enemyName.compare("Simplicity") == 0
 			|| enemyName.compare("GuiBot") == 0
 			|| enemyName.compare("ZurZurZur") == 0
 			|| enemyName.compare("Bereaver") == 0
@@ -1050,6 +1049,9 @@ struct ExampleAIModule :AIModule {
 				|| enemyName.compare("tscmoo") == 0
 				|| enemyName.compare("Tomas Cere") == 0
 				|| enemyName.compare("Bereaver") == 0) me9PoolLing = true;
+		}
+		else if (enemyName.compare("Simplicity") == 0) {
+			G = 3; me9PoolLing = true;
 		}
 		else if (enemyName.compare("Arrakhammer") == 0) { // Reactive
 			if (myRecentStats[numMyRecentStats - 1] == 30 || myRecentStats[numMyRecentStats - 1] == 11)
@@ -1080,7 +1082,7 @@ struct ExampleAIModule :AIModule {
 			}
 		}
 		else if (enemyName.compare("MadMixZ") == 0 || enemyName.compare("MadMixR") == 0 && XE->getRace() == Races::Zerg) { // Reactive
-			if (//myRecentStats[numMyRecentStats - 1] == 10 || 
+			if (myRecentStats[numMyRecentStats - 1] == 10 || 
 				myRecentStats[numMyRecentStats - 1] == 21)
 			{
 				G = 2;
@@ -1119,7 +1121,8 @@ struct ExampleAIModule :AIModule {
 			//	if (myRecentStats[numMyRecentStats - 1] == 60 || myRecentStats[numMyRecentStats - 1] == 11) G = 1;
 			//	else { G = 6; me2HHydra = true; }
 			//}
-			G = 6; me2HHydra = true;
+			if (myRecentStats[numMyRecentStats - 1] == 60 || myRecentStats[numMyRecentStats - 1] == 11) G = 1;
+			else { G = 6; me2HHydra = true; }
 		}
 		else if (enemyName.compare("MadMixR") == 0 && XE->getRace() == Races::Protoss) { // Reactive
 			if (thisMapIndex == 1) { G = 3; me9PoolLing = true; }
@@ -1138,13 +1141,13 @@ struct ExampleAIModule :AIModule {
 		}
 		else if (enemyName.compare("Proxy") == 0) {
 			if (myRecentStats[numMyRecentStats - 1] == 20 || myRecentStats[numMyRecentStats - 1] == 31) { G = 3; me9PoolLing = true; }
-			else { G = 2; myMaxSunks = 2; meGetMuta = true; /*myMaxSpores = 1;*/ }
+			else { G = 2; myMaxSunks = 3; meGetMuta = true; /*myMaxSpores = 1;*/ }
 			//G = 3; me9PoolLing = true;
 		}
 		else if (enemyName.compare("Andrew Smith") == 0) {
-			//G = 1;
-			if (myRecentStats[numMyRecentStats - 1] == 20 || myRecentStats[numMyRecentStats - 1] == 31) { G = 3; /*me9PoolLing = true;*/ }
-			else { G = 2; meLurkerRush = true; myMaxSunks = 0; }
+			//if (myRecentStats[numMyRecentStats - 1] == 20 || myRecentStats[numMyRecentStats - 1] == 31) { G = 3; /*me9PoolLing = true;*/ }
+			//else { G = 2; myMaxSunks = 3; }
+			G = 2; myMaxSunks = 3;
 		}
 		else if (enemyName.compare("CherryPiSSCAIT2017") == 0) {
 			G = 3; me9PoolLing = true;
@@ -1178,13 +1181,24 @@ struct ExampleAIModule :AIModule {
 			meGetMuta = true;
 			meSmartMuta = 1;
 		}
+		else if (enemyName.compare("krasi0") == 0) {
+			G = 2;  meLurkerRush = true; myMaxSunks = 0;
+		}
 		else if (enemyName.compare("krasi0P") == 0) {
-			/*if (myRecentStats[numMyRecentStats - 1] == 30 || myRecentStats[numMyRecentStats - 1] == 11) { G = 1; }
-			else { G = 3;  me3HLing = 21; }*/
-			G = 3;  me3HLing = 21;
+			if (myRecentStats[numMyRecentStats - 1] == 30 || myRecentStats[numMyRecentStats - 1] == 11) { G = 1; }
+			else { G = 3;  me3HLing = 21; }
+			//G = 3;  me3HLing = 21;
+		}
+		else if (enemyName.compare("Monster") == 0) {
+			G = 3;  me3HLing = 20;	
+		}
+		else if (enemyName.compare("Crona") == 0) {
+			if (myRecentStats[numMyRecentStats - 1] == 10 || myRecentStats[numMyRecentStats - 1] == 31) {
+				G = 3;
+			} else G = 1;
 		}
 		else if (enemyName.compare("Steamhammer") == 0) {
-			G = 1; me7Pool = true;
+			G = 2; myMaxSunks = 2; meGetMuta = true;
 		}
 		else if (enemyName.compare("WillyT") == 0) {
 			if (myRecentStats[numMyRecentStats - 1] == 20 || myRecentStats[numMyRecentStats - 1] == 31) {
