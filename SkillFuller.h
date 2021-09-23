@@ -39,7 +39,6 @@ auto&X = Broodwar;
 #define NW WeaponTypes::None
 #define NP Positions::None
 #define NT TilePositions::None
-#define DO_ONCE for (static int numTimesDone = 0 ; !numTimesDone++ ; )
 #define PI 3.141592653589793238462643383279502884L
 
 vector<string> hisInfo;
@@ -50,6 +49,7 @@ float averageFrameTime = 0.0;
 const int numMyRecentStats = 20;
 int myRecentStats[numMyRecentStats] = { 0 };
 vector<UnitType> hisTypesToCheck;
+map<int, int> hisUnitTypeAndNumLost;
 char num2char(int num_in) {
 	int num_33 = num_in + 33;
 
@@ -104,10 +104,12 @@ int me3HLing = 0;
 bool me9PoolLing = false;
 bool meLurkerRush = false;
 bool meUltraLing = false;
-bool me2HHydra = false;
+bool me2HHydra = false; // I don't know when I did this --b
 
-std::string enemyRace = "Unknown";
+std::string enemyRace = "_R";
 std::string enemyName;
+int hisBO = 0;
+bool hisNatScouted = false;
 
 BWEM::Map & bwemMapInstance = BWEM::Map::Instance();
 int myScoutID = -99;
@@ -268,7 +270,6 @@ Unit FindTarget(Unit attacker)
 } // FindTarget()
 
 bool LurkerCautiousBurrow(Unit u) {
-	//if (GR(u GP, u->getType().sightRange(), BE && B(Sieged)).empty())
 	if (Unit hisClosestAttacker = u GC(BE && FCA && !B(Flying) && !BW, 192))
 		if (!u->isBurrowed()) {
 			if (u->getLastCommand().getType() != UnitCommandTypes::Burrow) u->burrow();
@@ -455,11 +456,23 @@ void GoScouting(Unit u) {
 		if (LurkerCautiousBurrow(u)) 
 			return;
 
-	if (Q == F[40]) { // Drone returning resource first..
+	if (Q == F[40]) { // Drone
 		if (u->isCarryingGas() || u->isCarryingMinerals()) {
 			if (u->getLastCommand().getType() != UnitCommandTypes::Return_Cargo) u->returnCargo();
 			return;
 		}
+
+		if (hisDCenter != NP && hisNatCenter != NP) {
+			if (distSq2(u GP, hisNatCenter) < 49 * 1032)
+				hisNatScouted = true;
+
+			if (!hisNatScouted) { SmartMove(u, hisNatCenter); return; }
+		}
+
+		if (hisD != NT && hisNatScouted) 
+			if (Unit cm = X GC(DCenter, BM, 7 * 32)) 
+				if (u->getLastCommand().getType() != UnitCommandTypes::Gather || u->getLastCommand().getTarget() != cm)
+				{ ug(cm); return; }
 	}
 
 	// Lings deal with cannon rush
@@ -481,12 +494,6 @@ void GoScouting(Unit u) {
 			}
 			return;
 		}
-
-		if (Q == F[40])
-			if (Unit cm = X GC(DCenter, BM, 7 * 32))
-			{
-				ug(cm); return;
-			}
 	}
 	else {
 		for (TilePosition sl : X->getStartLocations()) {
@@ -506,8 +513,10 @@ void GoScouting(Unit u) {
 				&& distSq2(u GP, slPos) < 1296 * 1024) hisDFound = true;
 
 			if (TilePosition thisNatPos = FindNatPos(bwemMapInstance, sl)) {
-				if (!GR(Position(thisNatPos), (numStartingLocs == 4 ? 14 : 9) * 32, BE && Filter::IsBuilding).empty()) hisDFound = true;
-
+				if (!GR(Position(thisNatPos), (numStartingLocs == 4 ? 14 : 9) * 32, BE && (Filter::IsBuilding || Filter::IsResourceDepot
+					|| Filter::BuildType == F[146] || Filter::BuildType == F[149] || Filter::BuildType == F[150] || Filter::BuildType == F[154]
+					|| Filter::BuildType == F[103] || Filter::BuildType == F[105] || Filter::BuildType == F[117])).empty()) hisDFound = true;
+				
 				if (me1BaseLurkerMuta)
 					if (GR(Position(thisNatPos), 9 * 32, BE && FCA && !BW).size() >= 2) hisDFound = true;
 			}
@@ -522,10 +531,6 @@ void GoScouting(Unit u) {
 					}
 					return;
 				}
-
-				if (Q == F[40])
-					if (Unit cm = X GC(DCenter, BM, 7 * 32))
-						ug(cm); return;
 
 				break;
 			}
@@ -558,14 +563,14 @@ bool meSmash() {
 				if (hisCannons) {
 					double myScore = 0.0;
 					for (auto u : C->getUnits()) {
-						if (u->isCompleted() && !u->getType().isWorker() && !u->getType().isBuilding() && u->getType().canAttack()) {
+						if (u->isCompleted() && !Q.isWorker() && !Q.isBuilding() && Q.canAttack()) {
 							Position uPos = u GP;
 							bool shouldAdd = false;
 							if (any_of(hisBuildingPosAndType.begin(), hisBuildingPosAndType.end(), [&uPos](const auto & u)
 							{ return u.second == Protoss_Photon_Cannon && distSq2(u.first, uPos) <= 225 * 1024; })) shouldAdd = true;
 
 							if (shouldAdd) {
-								switch (unitTypeToInt(u->getType())) {
+								switch (UnitTypeToInt(Q)) {
 								case 36: myScore += 0.25; break; // ling
 								case 42: myScore += 0.33; break; // muta
 								default:;
@@ -766,6 +771,62 @@ int GetStartingInd(TilePosition startingLoc) {
 	return 0;
 } // int GetStartingInd(...)
 
+void IdentifyHisBO() {
+	if (XE->getRace() == Races::None || XE->getRace() == Races::Random || XE->getRace() == Races::Unknown) return;
+
+	// Identify rushes
+	int rushArrivalTime = 5760; // 4:00
+
+	if (XE->getRace() == Races::Protoss) {
+		rushArrivalTime = 5040; // 3:30
+		if (O < 4320 // 3:00
+			&& countHisUnits(F[4]) + hisUnitTypeAndNumLost[4] >= 3
+			|| O < 4800 && // 3:20
+			countHisUnits(F[4]) + hisUnitTypeAndNumLost[4] >= 4)
+			hisBO = 1;
+
+		if (O < 6240) // 4:00 (consider 3:00 when doing 4pool)
+			if (hisNatCenter != NP && hisDCenter != NP)
+				if (Unit hisNatBldg = X GC(hisNatCenter, BE && (FGT == F[154] || FGT == F[146] || FGT == F[149] || FGT == F[150]
+					|| Filter::BuildType == F[146] || Filter::BuildType == F[154] || Filter::BuildType == F[149] || Filter::BuildType == F[150]), 9 * 32))
+					if (BWEB::Map::getGroundDistance(hisNatBldg->getPosition(), hisDCenter) > BWEB::Map::getGroundDistance(hisNatCenter, hisDCenter)) // Assumes "normal" map layout ==> the natural protects the main
+						hisBO = 11;
+
+		if (O < 4320) { // 3:00
+			if (Unit hisProxyBldg = X GC(DCenter, BE && (FGT == F[146] || FGT == F[150]
+				|| Filter::BuildType == F[146] || Filter::BuildType == F[150]), 25 * 32))
+				hisBO = 12;
+
+			if (Unit hisProxyBldg = X GC(knCenter, BE && (FGT == F[146] || FGT == F[150]
+				|| Filter::BuildType == F[146] || Filter::BuildType == F[150]), 12 * 32))
+				hisBO = 12;
+		}
+	}
+
+	if (XE->getRace() == Races::Terran) {
+		if (O < 4800 // 3:20
+			&& countHisUnits(F[2]) + hisUnitTypeAndNumLost[2] >= 5
+			|| O < 6960 // 4:50
+			&& GR(knCenter, 9 * 32, BE && FGT == F[2]).size() >= 6)
+				hisBO = 1;
+
+		if (O < 3600) // 2:30
+			if (GR(DCenter, 10 * 32, BE && BW).size() >= 3
+				|| GR(knCenter, 10 * 32, BE && BW).size() >= 3)
+				hisBO = 21;
+	}
+
+	if (XE->getRace() == Races::Zerg)
+		if (O < 3240) // 2:15
+			if (countHisUnits(F[36]) + hisUnitTypeAndNumLost[36] >= 1)
+				hisBO = 1;
+
+	if (hisBO < 10)
+		if (O < rushArrivalTime)
+			if (Unit hisAttacker = X GC(DCenter, BE && (FGT == F[4] || FGT == F[2] || FGT == F[36]), 1024)) // Within 32 range from my starting main
+				hisBO = 1;
+}
+
 struct ExampleAIModule :AIModule {
 	void onStart() {
 		D = C->getStartLocation();
@@ -810,87 +871,100 @@ struct ExampleAIModule :AIModule {
 		else if (XE->getRace() == Races::Terran) enemyRace = "_T";
 		else if (XE->getRace() == Races::Zerg) enemyRace = "_Z";
 
+		int totalGames = 0;
 		ifstream mf("bwapi-data/read/" + enemyName + enemyRace + ".txt");
 		if (mf) {
 			int td = -1; int lc; while (mf >> lc) { ++td; GS[td] = lc; } mf.close();
 
 			vector<int> feasibleBOs = { 1, 2, 3, 4, 5 };
-			int betaDistributionParamAlpha = 2;
-			int betaDistributionParamBeta = betaDistributionParamAlpha;
-			double winratePosteriorMeanBest = 0;
-			std::unordered_map<int, double> boAndStats;
+			
+			std::map<double, int> scoreAndBO;
+			
+			for (int iBO : feasibleBOs) totalGames += GS[iBO * 2 - 2];
 
-			for (int iBOstats : feasibleBOs)
+			for (int iBO : feasibleBOs)
 			{
-				double winratePosteriorMean = (betaDistributionParamAlpha + GS[iBOstats * 2 - 1]) /
-					double(betaDistributionParamAlpha + betaDistributionParamBeta + GS[iBOstats * 2 - 2]);
+				double iScore = DBL_MAX;
+				if (GS[iBO * 2 - 2]) iScore = GS[iBO * 2 - 1] / double(GS[iBO * 2 - 2]) + sqrt(2 * log(totalGames) / double(GS[iBO * 2 - 2])); // UCB1
 
-				boAndStats[iBOstats] = winratePosteriorMean;
-				if (winratePosteriorMean > winratePosteriorMeanBest) {
-					G = iBOstats;
-					winratePosteriorMeanBest = winratePosteriorMean;
-				}
+				scoreAndBO[iScore] = iBO;
 			}
 
-			int buildOrderMngrIDCopy = G;
-			if (rand() % 100 + 1 > int(winratePosteriorMeanBest * 100)) {
-				double rewardPlusNoiseBest = 0;
-				double expDistParamLambda = 1.0;
-
-				for (int iBO : feasibleBOs)
-				{
-					double winRateReward = boAndStats[iBO];
-					double expNoise = -log(rand() / double(RAND_MAX)) / expDistParamLambda;
-					double rewardPlusNoise = winRateReward + expNoise - 0.1 * (iBO == buildOrderMngrIDCopy);
-					if (rewardPlusNoise > rewardPlusNoiseBest) {
-						G = iBO;
-						rewardPlusNoiseBest = rewardPlusNoise;
-					}
-				}
-			}
+			if (!scoreAndBO.empty()) G = scoreAndBO.rbegin()->second;
 		}
-		else G = 5;
+		else {
+			G = 1;
+		}
 
-		// Only do this when enemy race is known!
-		if (enemyRace.compare("Unknown") != 0) {
-			// Read enemy unit comp history from the last game..
-			ifstream mf2("bwapi-data/read/" + enemyName + enemyRace + "_INFO.txt");
-			if (mf2) {
-				int td = -1; std::string lc; while (mf2 >> lc) { ++td; hisInfoLastGame[td] = lc; } mf2.close();
-			}
+		// Read enemy unit comp history from the last game
+		ifstream mf2("bwapi-data/read/" + enemyName + enemyRace + "_INFO.txt");
+		if (mf2) {
+			int td = -1; std::string lc; while (mf2 >> lc) { ++td; hisInfoLastGame[td] = lc; } mf2.close();
+		}
 
-			// Read my recent stats..
-			ifstream mf3("bwapi-data/read/" + enemyName + enemyRace + "_RECENT.txt");
-			if (mf3) {
-				int myRecentStatsTemp[numMyRecentStats] = { 0 };
-				int td = -1; int lc; 
-				while (mf3 >> lc) { ++td; myRecentStatsTemp[td] = lc; } 
-				
-				for (int i = 0; i < numMyRecentStats; ++i)
-					myRecentStats[numMyRecentStats - td - 1 + i] = myRecentStatsTemp[i];
-				
-				mf3.close();
-			}
+		// Read my recent stats
+		ifstream mf3("bwapi-data/read/" + enemyName + enemyRace + "_RECENT.txt");
+		if (mf3) {
+			int myRecentStatsTemp[numMyRecentStats] = { 0 };
+			int td = -1; int lc;
+			while (mf3 >> lc) { ++td; myRecentStatsTemp[td] = lc; }
+
+			for (int i = 0; i < numMyRecentStats; ++i)
+				myRecentStats[numMyRecentStats - td - 1 + i] = myRecentStatsTemp[i];
+
+			mf3.close();
 		}
 
 		numStartingLocs = X->getStartLocations().size();
 
-		
-		/// vvv fix things here vvv
-		G = 2;
-		myMaxSunks = 6;
-		//myMaxSpores = 1;
-		//me7Pool = true;
-		//me3HLing = 1;
-		//me9PoolLing = true;
-		//meGetMuta = true;
-		//me987Hydra = 2;
-		//me2HHydra = true;
+		// Further Adjustment
+		const int hisPrevBO = myRecentStats[numMyRecentStats - 1] / 100;
+
+		int counterBO = 0;
+		if (hisPrevBO == 1) counterBO = 2; // Counter Rush (Zealots, Marines, Lings)
+		else if (hisPrevBO == 11) counterBO = 3; // Counter FFE
+		else if (hisPrevBO == 12) counterBO = 1; // Counter CannonRush
+		else if (hisPrevBO == 21) counterBO = 1; // Counter WorkerRush
+
+		// Simple check to prevent from getting stuck using `counterBO`
+		if (counterBO && counterBO <= 5) // check validity
+			if (GS[counterBO * 2 - 2] == 0 
+				|| GS[counterBO * 2 - 1] / double(GS[counterBO * 2 - 2]) > 0.66
+				|| 3 * GS[counterBO * 2 - 2] < totalGames)
+				G = counterBO;
+
+		/// Fix things here
+		//G = 1;
 
 		//////////////////////////////////////////////////
 		if (G == 1) me4or5Pool = true;
-		else if (G == 2) me1BaseLurkerMuta = true; 
+		else if (G == 2) { 
+			me1BaseLurkerMuta = true; 
+			if (hisPrevBO == 1) myMaxSunks = 6;
+			else {
+				if (enemyRace.compare("_T") == 0) {
+					meLurkerRush = true;
+					myMaxSunks = 0;
+				}
+				
+			}
+
+			if (enemyRace.compare("_Z") == 0) {
+				myMaxSunks = hisPrevBO == 1 ? 3 : 2;
+				meSmartMuta = 1;
+				meGetMuta = true;
+			}
+		}
 		else if (G == 3 && me3HLing != 2 && me3HLing != 3) {
+			if (enemyRace.compare("_P") == 0) {
+				for (auto u : hisInfoLastGame)
+					if (u.size() == 15)
+						if ((int)u[13] > 33)
+						{
+							me3HLing = 11; break;
+						}
+			}
+
 			if (me3HLing > 10) {
 				myMaxSunks = max(me3HLing / 10 - 1, 0);
 				myMaxSpores = me3HLing % 10;
@@ -900,7 +974,11 @@ struct ExampleAIModule :AIModule {
 				myMaxSunks = myMaxSpores = 0;
 			}
 		}
-		else if (G == 4) meUltraLing = true;
+		else if (G == 4) { 
+			if (enemyRace.compare("_Z") == 0) {
+				me3HLing = 1; me9PoolLing = true;
+			} else meUltraLing = true; 
+		}
 		else if (G == 5 && C->getRace() == Races::Zerg) {
 			if (!me987Hydra) { meCOEP = true; myMaxSunks = 6; }
 		}
@@ -921,25 +999,6 @@ struct ExampleAIModule :AIModule {
 
 		hisInfo.reserve(3600 / secondsPerTick + 1); // Assuming BASIL env, where games last for 60 minutes maximum
 
-		if (XE->getRace() == Races::Protoss) hisTypesToCheck = {
-			Protoss_Probe, Protoss_Zealot, Protoss_Dragoon,
-			Protoss_High_Templar, Protoss_Dark_Templar, Protoss_Archon,
-			Protoss_Dark_Archon, Protoss_Reaver, Protoss_Observer,
-			Protoss_Shuttle, Protoss_Scout, Protoss_Carrier,
-			Protoss_Arbiter, Protoss_Corsair, Protoss_Photon_Cannon };
-		else if (XE->getRace() == Races::Terran) hisTypesToCheck = {
-			Terran_SCV, Terran_Marine, Terran_Firebat,
-			Terran_Medic, Terran_Ghost, Terran_Vulture,
-			Terran_Siege_Tank_Tank_Mode, Terran_Goliath,
-			Terran_Wraith, Terran_Valkyrie, Terran_Battlecruiser,
-			Terran_Science_Vessel, Terran_Dropship, Terran_Bunker };
-		else hisTypesToCheck = {
-			Zerg_Drone, Zerg_Zergling, Zerg_Hydralisk,
-			Zerg_Lurker, Zerg_Ultralisk, Zerg_Defiler,
-			Zerg_Overlord, Zerg_Mutalisk, Zerg_Scourge,
-			Zerg_Queen, Zerg_Guardian, Zerg_Devourer
-		};
-
 		// Dispatch the initial four workers to the closest mineral patches
 		Unitset myStartingMPs = GR(DCenter, 320, B(Neutral) && BM);
 		vector<Unit> myClosestMPs;
@@ -959,10 +1018,32 @@ struct ExampleAIModule :AIModule {
 	} // onStart()
 
 	void onFrame() {
-		// Initializing...
+		// Initializing
 		O = X->getFrameCount();
 		bool myNatBuilt = !GR(knCenter, 160, BO && BR).empty();
 		bool my3rdBuilt = !GR(k3Center, 160, BO && BR).empty();
+		if (O > 1440) IdentifyHisBO(); // After 1:00
+		
+		if (hisTypesToCheck.empty()) {
+			if (XE->getRace() == Races::Protoss) hisTypesToCheck = { 
+				Protoss_Probe, Protoss_Zealot, Protoss_Dragoon,
+				Protoss_High_Templar, Protoss_Dark_Templar, Protoss_Archon,
+				Protoss_Dark_Archon, Protoss_Reaver, Protoss_Observer,
+				Protoss_Shuttle, Protoss_Scout, Protoss_Carrier,
+				Protoss_Arbiter, Protoss_Corsair, Protoss_Photon_Cannon };
+			else if (XE->getRace() == Races::Terran) hisTypesToCheck = {
+				Terran_SCV, Terran_Marine, Terran_Firebat,
+				Terran_Medic, Terran_Ghost, Terran_Vulture,
+				Terran_Siege_Tank_Tank_Mode, Terran_Goliath,
+				Terran_Wraith, Terran_Valkyrie, Terran_Battlecruiser,
+				Terran_Science_Vessel, Terran_Dropship, Terran_Bunker };
+			else if (XE->getRace() == Races::Zerg) hisTypesToCheck = {
+				Zerg_Drone, Zerg_Zergling, Zerg_Hydralisk,
+				Zerg_Lurker, Zerg_Ultralisk, Zerg_Defiler,
+				Zerg_Overlord, Zerg_Mutalisk, Zerg_Scourge,
+				Zerg_Queen, Zerg_Guardian, Zerg_Devourer
+			};
+		}
 
 		if (hisD != NT) {
 			if (hisStartingInd == 0) hisStartingInd = GetStartingInd(hisD);
@@ -970,23 +1051,15 @@ struct ExampleAIModule :AIModule {
 			if (hisDCenter == NP) hisDCenter = Position(hisD) + Position(64, 48);
 			if (hisNatCenter == NP) hisNatCenter = Position(FindNatPos(bwemMapInstance, hisD)) + Position(64, 48);
 
-			// Updating enemy starting base status...
+			// Updating enemy starting base status
 			if (!hisDKilled)
 				if (!GR(hisDCenter, 160, BO).empty() && GR(hisDCenter, 160, BE && BR).empty())
 					hisDKilled = true;
 		}
 
-		// Updating target queue...
+		// Updating target queue
 		for (auto u = h.begin(); u != h.end();) u = X->isVisible(*u) && X->getUnitsOnTile(*u, B(Building) && BE).empty() ? enemyBldgTLAndUnit[*u] = t, h.erase(u) : u + 1;
 		for (Unit u : XE->getUnits())!enemyBldgTLAndUnit[u->getTilePosition()] && Q.isBuilding() ? enemyBldgTLAndUnit[u->getTilePosition()] = u, h.push_back(u->getTilePosition()) : "a";
-
-		if (enemyRace.compare("Unknown") == 0
-			&& O && O < 14400 && O % 720 == 0)
-		{
-			if (XE->getRace() == Races::Protoss) enemyRace = "_P";
-			else if (XE->getRace() == Races::Terran) enemyRace = "_T";
-			else if (XE->getRace() == Races::Zerg) enemyRace = "_Z";
-		}
 
 		// update hisInfo every X seconds, assuming max game time is 60 minutes
 		if (O <= 86401) {
@@ -994,9 +1067,14 @@ struct ExampleAIModule :AIModule {
 				myAttackCondition = meSmash();
 
 				string thisStr;
-				for (auto i : hisTypesToCheck) {
-					if (!i.isBuilding()) thisStr.push_back(num2char(countHisUnits(i)));
-					else thisStr.push_back(num2char(countHisBuildings(i)));
+				if (hisTypesToCheck.empty()) {
+					thisStr = "!";
+				}
+				else {
+					for (auto i : hisTypesToCheck) {
+						if (!i.isBuilding()) thisStr.push_back(num2char(countHisUnits(i)));
+						else thisStr.push_back(num2char(countHisBuildings(i)));
+					}
 				}
 				hisInfo.push_back(thisStr);
 
@@ -1136,7 +1214,7 @@ struct ExampleAIModule :AIModule {
 					}
 
 					if (myOrders.front().isBuilding()) {
-						int buildingTypeToBuild = unitTypeToInt(myOrders.front());
+						int buildingTypeToBuild = UnitTypeToInt(myOrders.front());
 
 						if (buildingTypeToBuild == 123 && CL(123) == 1 && !hasHatNat && C->minerals() > 300) { // Expansion at nat
 							if (!GR(knCenter, 256, BO && FGT == F[41]).empty()) BB(buildingTypeToBuild, kn);
@@ -1185,7 +1263,7 @@ struct ExampleAIModule :AIModule {
 						myOrders.erase(myOrders.begin());
 			}
 		} // when on COEP
-		else { // Construct my buildings...
+		else { // Construct my buildings
 			if (CC(140) == 1 && hasHatNat && C->minerals() > 100
 				&& GR(knCenter, 8 * 32, BO && FGT == F[140]).empty()
 				&& GR(knCenter, 8 * 32, BO && BW).size() >= 5) // Extractor at nat
@@ -1221,11 +1299,11 @@ struct ExampleAIModule :AIModule {
 					if (C->supplyUsed() >= 16 && CL(134) && C->minerals() >= 42 && CL(140) == 0) BB(140); // Extractor
 				}
 				else {
-					if (CL(134) == 0 && C->minerals() >= 188 && C->supplyUsed() >= 24) BB(134); // Pool
-					if (CL(134) && C->minerals() >= 42 && CL(140) == 0) BB(140); // Extractor
+					if (CL(134) == 0 && C->minerals() >= 188 && C->supplyUsed() >= 18) BB(134); // Pool
+					if (CL(134) && C->minerals() >= 42 && CL(140) == 0 && CL(135) + CL(137) > (meLurkerRush ? 0 : myMaxSunks / 2)) BB(140); // Extractor
 				}
 
-				if (CL(134) && CL(140) && CL(135) + CL(137) < myMaxSunks && C->minerals() >= 68) BB(135); // Sunk up
+				if (CL(134) && CL(140) >= (meLurkerRush ? 1 : 0) && CL(41) >= 2 && CL(135) + CL(137) < myMaxSunks && C->minerals() >= 68) BB(135); // Sunk up
 				if (!meGetMuta && CL(124) && CL(127) == 0 && C->minerals() >= 100 && C->gas() >= 50) BB(127); // Get den after lair
 				if (CL(135) + CL(137) >= myMaxSunks && myAttackCondition) {
 					if (CL(123) < 2 && C->minerals() > 400
@@ -1325,7 +1403,7 @@ struct ExampleAIModule :AIModule {
 			|| me987Hydra && CL(127) && CL(40) >= 8 && !meGetMuta
 			|| me7Pool && CL(40) >= 7
 			|| me1BaseLurkerMuta 
-			&& (CL(40) >= (meLurkerRush && !meGetMuta ? 10 : 12) || !meLurkerRush && C->supplyUsed() >= 16 && CL(41) == 1 // OV at supply 8
+			&& (CL(40) >= (meLurkerRush && !meGetMuta ? 10 : 12) 
 				|| meLurkerRush && (CL(134) && CL(140) == 0 || CL(140) && C->supplyUsed() >= 16 && CL(41) == 1 
 					|| CC(140) && C->minerals() < 200 && CL(124) == 0 || CL(124) && CL(127) == 0 && C->minerals() < 150))
 			|| me3HLing && !meGetMuta
@@ -1370,10 +1448,16 @@ struct ExampleAIModule :AIModule {
 		}
 
 		bool pauseOVProduction = false;
-		if (me9PoolLing) {
+		if (me1BaseLurkerMuta) {
 			if (CL(134) == 0 || C->supplyUsed() < 18) pauseOVProduction = true;
 		}
-		if (me987Hydra && CL(127) == 0) pauseOVProduction = true;
+		else if (me3HLing) {
+			if (me9PoolLing)
+				if (CL(134) == 0 || C->supplyUsed() < 18) pauseOVProduction = true;
+		}
+		else if (me987Hydra) {
+			if (CL(127) == 0) pauseOVProduction = true;
+		}
 
 		bool pauseHydraProduction = false;
 		if (me2HHydra) {
@@ -1391,7 +1475,7 @@ struct ExampleAIModule :AIModule {
 		if (XE->getRace() == Races::Terran) hisBldgInd = 117;
 		//else if (XE->getRace() == Races::Protoss) hisBldgInd = 150;
 
-		// Manage my units' behaviors...
+		// Manage my units' behaviors
 		for (Unit u : C->getUnits()) {
 			if (!u->exists() || !u->isCompleted() || u->isMaelstrommed() || u->isStasised() || u->isLoaded() || u->isStuck()) continue;
 
@@ -1400,7 +1484,7 @@ struct ExampleAIModule :AIModule {
 			if (Z && !Z->isMoving()) enemyUnitAndFrameAttackStarted[Z] = O;
 			else if (u->isStartingAttack()) enemyUnitAndFrameAttackStarted[u] = O;
 			
-			// Upgrade/Research/Morph...
+			// Upgrade/Research/Morph
 			if (Q.isBuilding()) {
 				if (meGetMuta || me1BaseLurkerMuta || meUltraLing || meCOEP)
 					if (u->getTilePosition() == D) { ut(F[124]); ut(F[125]); } // Main Hatch->Lair->Hive
@@ -1459,7 +1543,7 @@ struct ExampleAIModule :AIModule {
 						}
 
 						if (!myOrders.front().isBuilding()) {
-							int unitTypeToMorph = unitTypeToInt(myOrders.front());
+							int unitTypeToMorph = UnitTypeToInt(myOrders.front());
 
 							if (C->supplyTotal() - C->supplyUsed() >= myOrders.front().supplyRequired()) {
 								ut(F[unitTypeToMorph]);
@@ -1476,7 +1560,7 @@ struct ExampleAIModule :AIModule {
 						}
 					}
 				}
-				else { // Manage larvae when NOT on COEP..
+				else { // Manage larvae when NOT on COEP
 					if (CC(125) && !HU(UT Adrenal_Glands) && !C->isUpgrading(UT Adrenal_Glands) // Prioritize crackling upgrade when we have Hive
 						|| me1BaseLurkerMuta && !meGetMuta && (CC(124) && CC(127) && C->minerals() < 450
 							&& !HR(TT Lurker_Aspect) && !C->isResearching(TT Lurker_Aspect)) // Prioritize Lurker_Aspect
@@ -1493,7 +1577,7 @@ struct ExampleAIModule :AIModule {
 					if (C->supplyTotal() < 400 && C->minerals() >= 100) {
 						if (me1BaseLurkerMuta) {
 							if (C->supplyTotal() <= 18) {
-								if (C->supplyUsed() >= 16 && O - co > 660) {
+								if (CL(134) && O - co > 660) {
 									if (!meLurkerRush || CL(124)) {
 										ut(F[41]);
 										co = O;
@@ -1517,7 +1601,7 @@ struct ExampleAIModule :AIModule {
 						}
 
 						if (meUltraLing) {
-							if (CL(132)) { // When we have ultralisk cavern..
+							if (CL(132)) { // When we have ultralisk cavern
 								if (C->supplyTotal() - C->supplyUsed() < 12 && O - co > 330) {
 									ut(F[41]);
 									co = O;
@@ -1549,13 +1633,13 @@ struct ExampleAIModule :AIModule {
 							}
 						}
 
-						// when we're supply blocked..
+						// when we're supply blocked
 						if (C->supplyUsed() > C->supplyTotal() && O - co > 660 && C->minerals() > 100) {
 							co = O; ut(F[41]);
 						}
 					}
 
-					// loop through all my bases and morph the larvae in the vicinity to drones...
+					// loop through all my bases and morph the larvae in the vicinity to drones
 					for (Position ip : {DCenter, knCenter}) /// Caution: adding `k3Center` here may cause the failure of dispatching gas extractors
 						if (u->getDistance(ip) < 128 && (int)GR(ip, 320, BO&&BW).size() < 18 
 							&& CL(40) < (myNatBuilt ? 36 : (me987Hydra && !meGetMuta ? 12 : 18))) {
@@ -1565,11 +1649,11 @@ struct ExampleAIModule :AIModule {
 							if (meGetMuta && CL(40) < 12) ut(F[40]); // Drones
 						}
 
-					// Train my army units..
+					// Train my army units
 					if (me4or5Pool) {
 						ut(F[42]); // Mutas
 						if (CC(133) && (CC(36) < 4 * CC(42) || C->gas() < 100) 
-							|| !CC(133)) // Not having a spire..
+							|| !CC(133)) // Not having a spire
 							ut(F[36]); // Zerglings
 					}
 					else if (me7Pool) {
@@ -1579,7 +1663,7 @@ struct ExampleAIModule :AIModule {
 						}
 						else ut(F[36]);
 					}
-					else if(me1BaseLurkerMuta) { // Unit production..
+					else if(me1BaseLurkerMuta) { // Unit production
 						if (CC(133)) ut(F[42]); // Mutas
 						if ((HR(TT Lurker_Aspect) || C->isResearching(TT Lurker_Aspect)) && C->gas() > 25 && CL(37) < 3 * CC(140)) ut(F[37]); // Hydras
 						if (CL(127) + CL(133) 
@@ -1633,34 +1717,49 @@ struct ExampleAIModule :AIModule {
 					}
 				}
 				continue;
-			} // else if(Q == F[34]) // larvae...
+			} // else if(Q == F[34]) // larvae
 
-			// Manage hydras...
+			// Manage hydras
 			else if(Q == F[37]) {
-				if (HR(TT Lurker_Aspect)) // when there are avilable hydras to morph into lurkers..
+				if (HR(TT Lurker_Aspect)) // when there are avilable hydras to morph into lurkers
 					if (me1BaseLurkerMuta && CC(97) < 2 * CC(37)
 						|| meCOEP && CC(97) < 6
 						|| meUltraLing)
 						ut(F[97]); // into lurkers!
 			}
 
-			// Manage drones...
+			// Manage drones
 			else if((Q == F[40] || Q == F[13]) && (myBuilderID == 0 || u->getID() != myBuilderID)) { // Drone or SCV
-				// Send scout when my candidate is found
-				if (hisD == NT && u->getID() == myScoutID) { myScoutFound = true; GoScouting(u); continue; }
+				if (CC(134) == 0 && XE->getRace() != Races::Random && !u->isCarryingGas() && !u->isGatheringGas()) // Deal with gas steal
+				{
+					UnitType gasBldgType = XE->getRace() == Races::Protoss ? Protoss_Assimilator : XE->getRace() == Races::Terran ? Terran_Refinery : Zerg_Extractor;
+					if (Unit hisBldg = X GC(DCenter, BE && (FGT == gasBldgType || Filter::BuildType == gasBldgType))) {
+						if (Unit hisAttacker = X GC(u GP, BE && FCA && !Filter::IsFlying, 32)) {
+							if (u->getLastCommand().getType() != UnitCommandTypes::Attack_Unit || u->getLastCommand().getTarget() != hisAttacker) ua(hisAttacker);
+							continue;
+						}
 
-				// Set up scouting params when we have pool..
-				if (hisD == NT && CL(134) && CL(40) >= 4 && O - cs > 240 && !u->isCarryingMinerals() && !u->isCarryingGas()) {
-					bool timeToScout = false;
-					if (O < 4320) { // 3:00
-						if (me987Hydra && numStartingLocs == 4 && CL(127)) timeToScout = true;
-						if (me1BaseLurkerMuta && O < 3600) timeToScout = true; // 2:30
-						if (me4or5Pool) timeToScout = true;
-						if (me3HLing && CL(123) + CL(134) >= 2 && numStartingLocs == 4) timeToScout = true;
-						if (me2HHydra && numStartingLocs > 2 && O > 3840) timeToScout = true;
+						SmartAttack(u, hisBldg);
+						continue;
 					}
+				}
 
-					if (timeToScout) { // When it is time to scout...
+				// Send scout when my candidate is found
+				if (myScoutID && u->getID() == myScoutID) { cs = O; myScoutFound = true; GoScouting(u); continue; }
+
+				// Initiate scouting
+				if (!hisNatScouted && CL(134) && CL(40) >= 4 && O - cs > 240 && O < 4320) { // 3:00
+					bool timeToScout = false;
+					
+					if (me4or5Pool && numStartingLocs >= 4) timeToScout = true;
+					//if (me7Pool) timeToScout = true;
+					if (me1BaseLurkerMuta && O < 3600) timeToScout = true; // 2:30
+					if (me3HLing && CL(123) + CL(134) >= 2) timeToScout = true;
+					if (meCOEP) timeToScout = true;
+					if (me987Hydra && numStartingLocs == 4 && CL(127)) timeToScout = true;
+					if (me2HHydra && numStartingLocs > 2 && O > 3840) timeToScout = true;
+
+					if (timeToScout) { // When it is time to scout
 						if (myScoutID < 0) { cs = O; myScoutID = u->getID(); myScoutFound = true; GoScouting(u); continue; }
 					}
 				}
@@ -1768,7 +1867,7 @@ struct ExampleAIModule :AIModule {
 				} // Refining/Mining at main
 			}
 
-			// Manage overlords...
+			// Manage overlords
 			else if(Q == F[41]) {
 				if (Unit hisFlyingAttacker = u GC(BE && B(Flying) && FCA && Filter::AirWeapon != NW, 9 * 32))
 					if (CL(136)) // Spore
@@ -2131,7 +2230,7 @@ struct ExampleAIModule :AIModule {
 						}
 					}
 				}
-				else { // when enemy starting main is not destroyed..
+				else { // when enemy starting main is not destroyed
 					if (Unit ZZ = FindTarget(u)) {
 						if (L(ZZ)) {
 							if (ZZ->getType().isBuilding() && !ZZ->getType().canAttack())
@@ -2236,9 +2335,9 @@ struct ExampleAIModule :AIModule {
 						}
 					}
 
-					// Save starting main in danger..
+					// Save starting main in danger
 					if (Unit hisClosestAttacker = X GC(DCenter, BE && FCA && !Filter::IsWorker && !B(Invincible), 320)) {
-						if (hisClosestAttacker->isFlying() && u->getType().airWeapon() != NW || !hisClosestAttacker->isFlying() && u->getType().groundWeapon() != NW)
+						if (hisClosestAttacker->isFlying() && Q.airWeapon() != NW || !hisClosestAttacker->isFlying() && Q.groundWeapon() != NW)
 						{
 							SmartMove(u, DCenter); 
 							continue;
@@ -2271,14 +2370,14 @@ struct ExampleAIModule :AIModule {
 							else SmartMove(u, DCenter);
 						}
 					}
-				} // when enemy starting main is not destroyed..
+				} // when enemy starting main is not destroyed
 			} // Manage my army units
 
 			// Manage scourges (avoid overkill)
 			if (Q == F[46])if (Unit ZZ = u GC(BE&&B(Flying), 400)) L(ZZ) && es[ZZ] <= (ZZ->getHitPoints() + ZZ->getShields()) / 110 ? es[ZZ]++, ua(ZZ) : "a";
 		} // for (Unit u : C->getUnits())
 
-		if (!myScoutFound) myScoutID = -99;
+		if (!myScoutFound || O > 7200) myScoutID = -99;
 	}  // onFrame()
 
 	void onUnitMorph(Unit u) {
@@ -2308,7 +2407,7 @@ struct ExampleAIModule :AIModule {
 	void onUnitDiscover(Unit u) {
 		if (u->getPlayer() == XE) {
 			UnitType uType = Q;
-
+			
 			if (uType == Terran_Siege_Tank_Siege_Mode) uType = Terran_Siege_Tank_Tank_Mode;
 
 			if (!uType.isBuilding()) { 
@@ -2317,7 +2416,7 @@ struct ExampleAIModule :AIModule {
 				hisUnitIDAndInfo[u->getID()].unitSpd = std::make_pair(u->getVelocityX(), u->getVelocityY());
 				hisUnitIDAndInfo[u->getID()].lastFrameVisible = O;
 			}
-			else if(uType == Protoss_Photon_Cannon ||
+			else if (uType == Protoss_Photon_Cannon ||
 				uType == Terran_Bunker || uType == Terran_Missile_Turret ||
 				uType == Zerg_Sunken_Colony || uType == Zerg_Spore_Colony)
 				hisBuildingPosAndType[u GP] = uType;
@@ -2330,11 +2429,12 @@ struct ExampleAIModule :AIModule {
 			if (uType == Terran_Siege_Tank_Siege_Mode) uType = Terran_Siege_Tank_Tank_Mode;
 
 			if (!uType.isBuilding()) {
+				hisUnitTypeAndNumLost[UnitTypeToInt(uType)]++;
 				auto it = hisUnitIDAndInfo.find(u->getID());
 				if (it != hisUnitIDAndInfo.end())
 					hisUnitIDAndInfo.erase(it);
 			}
-			else if(uType == Protoss_Photon_Cannon ||
+			else if (uType == Protoss_Photon_Cannon ||
 				uType == Terran_Bunker || uType == Terran_Missile_Turret ||
 				uType == Zerg_Sunken_Colony || uType == Zerg_Spore_Colony)
 			{
@@ -2381,7 +2481,7 @@ struct ExampleAIModule :AIModule {
 		for (int i = 1; i < numMyRecentStats; ++i)
 			mfo3 << myRecentStats[i] << "\n";
 
-		mfo3 << G * 10 + u << "\n";
+		mfo3 << hisBO * 100 + G * 10 + u << "\n";
 
 		ofstream mf3("bwapi-data/write/" + enemyName + enemyRace + "_RECENT" + ".txt", std::ofstream::trunc);
 		if (mf3)

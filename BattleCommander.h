@@ -209,17 +209,17 @@ std::map<UnitType, int> hisArmyCompositionGen(int currentFrame, std::vector<Unit
 		for (UnitType iType : hisArmyUnits) {
 			if (isPrevAndNextInfoValid) {
 				switch (iType) {
-				case Protoss_Probe: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[0] + (int)hisUnitCompNext[0]) / 2);
-				case Protoss_Zealot: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[1] + (int)hisUnitCompNext[1]) / 2);
-				case Protoss_Dragoon: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[2] + (int)hisUnitCompNext[2]) / 2);
-				case Protoss_Dark_Templar: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[4] + (int)hisUnitCompNext[4]) / 2);
-				case Protoss_Archon: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[5] + (int)hisUnitCompNext[5]) / 2);
-				case Protoss_Reaver: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[7] + (int)hisUnitCompNext[7]) / 2);
-				case Protoss_Scout: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[10] + (int)hisUnitCompNext[10]) / 2);
-				case Protoss_Carrier: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[11] + (int)hisUnitCompNext[11]) / 2);
-				case Protoss_Arbiter: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[12] + (int)hisUnitCompNext[12]) / 2);
-				case Protoss_Corsair: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[13] + (int)hisUnitCompNext[13]) / 2);
-				case Protoss_Photon_Cannon: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[14] + (int)hisUnitCompNext[14]) / 2);
+				case Protoss_Probe: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[0] + (int)hisUnitCompNext[0] - 66) / 2);
+				case Protoss_Zealot: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[1] + (int)hisUnitCompNext[1] - 66) / 2);
+				case Protoss_Dragoon: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[2] + (int)hisUnitCompNext[2] - 66) / 2);
+				case Protoss_Dark_Templar: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[4] + (int)hisUnitCompNext[4] - 66) / 2);
+				case Protoss_Archon: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[5] + (int)hisUnitCompNext[5] - 66) / 2);
+				case Protoss_Reaver: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[7] + (int)hisUnitCompNext[7] - 66) / 2);
+				case Protoss_Scout: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[10] + (int)hisUnitCompNext[10] - 66) / 2);
+				case Protoss_Carrier: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[11] + (int)hisUnitCompNext[11] - 66) / 2);
+				case Protoss_Arbiter: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[12] + (int)hisUnitCompNext[12] - 66) / 2);
+				case Protoss_Corsair: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[13] + (int)hisUnitCompNext[13] - 66) / 2);
+				case Protoss_Photon_Cannon: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[14] + (int)hisUnitCompNext[14] - 66) / 2);
 				default: compositionMap[iType] = countHisUnits(iType);
 				}
 			}
@@ -243,17 +243,17 @@ std::map<UnitType, int> hisArmyCompositionGen(int currentFrame, std::vector<Unit
 		for (UnitType iType : hisArmyUnits) {
 			if (isPrevAndNextInfoValid) {
 				switch (iType) {
-				case Terran_SCV: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[0] + (int)hisUnitCompNext[0]) / 2);
-				case Terran_Marine: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[1] + (int)hisUnitCompNext[1]) / 2);
-				case Terran_Firebat: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[2] + (int)hisUnitCompNext[2]) / 2);
-				case Terran_Ghost: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[4] + (int)hisUnitCompNext[4]) / 2);
-				case Terran_Vulture: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[5] + (int)hisUnitCompNext[5]) / 2);
-				case Terran_Siege_Tank_Tank_Mode: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[6] + (int)hisUnitCompNext[6]) / 2);
-				case Terran_Goliath: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[7] + (int)hisUnitCompNext[7]) / 2);
-				case Terran_Wraith: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[8] + (int)hisUnitCompNext[8]) / 2);
-				case Terran_Valkyrie: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[9] + (int)hisUnitCompNext[9]) / 2);
-				case Terran_Battlecruiser: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[10] + (int)hisUnitCompNext[10]) / 2);
-				case Terran_Bunker: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[13] + (int)hisUnitCompNext[13]) / 2);
+				case Terran_SCV: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[0] + (int)hisUnitCompNext[0] - 66) / 2);
+				case Terran_Marine: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[1] + (int)hisUnitCompNext[1] - 66) / 2);
+				case Terran_Firebat: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[2] + (int)hisUnitCompNext[2] - 66) / 2);
+				case Terran_Ghost: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[4] + (int)hisUnitCompNext[4] - 66) / 2);
+				case Terran_Vulture: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[5] + (int)hisUnitCompNext[5] - 66) / 2);
+				case Terran_Siege_Tank_Tank_Mode: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[6] + (int)hisUnitCompNext[6] - 66) / 2);
+				case Terran_Goliath: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[7] + (int)hisUnitCompNext[7] - 66) / 2);
+				case Terran_Wraith: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[8] + (int)hisUnitCompNext[8] - 66) / 2);
+				case Terran_Valkyrie: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[9] + (int)hisUnitCompNext[9] - 66) / 2);
+				case Terran_Battlecruiser: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[10] + (int)hisUnitCompNext[10] - 66) / 2);
+				case Terran_Bunker: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[13] + (int)hisUnitCompNext[13] - 66) / 2);
 				default: compositionMap[iType] = countHisUnits(iType);
 				}
 			}
@@ -294,15 +294,15 @@ std::map<UnitType, int> hisArmyCompositionGen(int currentFrame, std::vector<Unit
 		for (UnitType iType : hisArmyUnits) {
 			if (isPrevAndNextInfoValid) {
 				switch (iType) {
-				case Zerg_Drone: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[0] + (int)hisUnitCompNext[0]) / 2);
-				case Zerg_Zergling: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[1] + (int)hisUnitCompNext[1]) / 2);
-				case Zerg_Hydralisk: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[2] + (int)hisUnitCompNext[2]) / 2);
-				case Zerg_Lurker: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[3] + (int)hisUnitCompNext[3]) / 2);
-				case Zerg_Ultralisk: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[4] + (int)hisUnitCompNext[4]) / 2);
-				case Zerg_Mutalisk: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[7] + (int)hisUnitCompNext[7]) / 2);
-				case Zerg_Scourge: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[8] + (int)hisUnitCompNext[8]) / 2);
-				case Zerg_Guardian: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[10] + (int)hisUnitCompNext[10]) / 2);
-				case Zerg_Devourer: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[11] + (int)hisUnitCompNext[11]) / 2);
+				case Zerg_Drone: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[0] + (int)hisUnitCompNext[0] - 66) / 2);
+				case Zerg_Zergling: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[1] + (int)hisUnitCompNext[1] - 66) / 2);
+				case Zerg_Hydralisk: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[2] + (int)hisUnitCompNext[2] - 66) / 2);
+				case Zerg_Lurker: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[3] + (int)hisUnitCompNext[3] - 66) / 2);
+				case Zerg_Ultralisk: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[4] + (int)hisUnitCompNext[4] - 66) / 2);
+				case Zerg_Mutalisk: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[7] + (int)hisUnitCompNext[7] - 66) / 2);
+				case Zerg_Scourge: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[8] + (int)hisUnitCompNext[8] - 66) / 2);
+				case Zerg_Guardian: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[10] + (int)hisUnitCompNext[10] - 66) / 2);
+				case Zerg_Devourer: compositionMap[iType] = max(countHisUnits(iType), ((int)hisUnitCompPrev[11] + (int)hisUnitCompNext[11] - 66) / 2);
 				default: compositionMap[iType] = countHisUnits(iType);
 				}
 			}
@@ -812,7 +812,7 @@ std::vector<UnitType> runCOEP(std::vector<UnitType>& actions, int popSize, int n
 	return genomeFitnessMap.rbegin()->second;
 }
 
-int unitTypeToInt(UnitType ut) {
+int UnitTypeToInt(UnitType ut) {
 	if (ut == Zerg_Larva) return 34;
 	else if (ut == Zerg_Egg) return 35;
 	else if (ut == Zerg_Zergling) return 36;
@@ -835,5 +835,7 @@ int unitTypeToInt(UnitType ut) {
 	else if (ut == Zerg_Sunken_Colony) return 137;
 	else if (ut == Zerg_Spore_Colony) return 136;
 	else if (ut == Zerg_Extractor) return 140;
+	else if (ut == Terran_Marine) return 2;
+	else if (ut == Protoss_Zealot) return 4;
 	else return 0;
 }
