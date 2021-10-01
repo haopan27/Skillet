@@ -933,6 +933,27 @@ struct ExampleAIModule :AIModule {
 				|| 3 * GS[counterBO * 2 - 2] < totalGames)
 				G = counterBO;
 
+		int numValidRecords = 0;
+		int hisNextBO = 0;
+		int myPrevRes = myRecentStats[numMyRecentStats - 1] % 10;
+		map<int, double> hisBOAndScore;
+		for (int i = numMyRecentStats - 2; i >= 0; --i)
+			if (myRecentStats[i] > 0) {
+				numValidRecords++;
+				if (myRecentStats[i] % 10 == myPrevRes)
+					hisBOAndScore[myRecentStats[i + 1] / 100] += exp(double(i - numMyRecentStats + 1));
+			}
+
+		if (numValidRecords > numMyRecentStats / 2 && !hisBOAndScore.empty())
+		{
+			map<int, double>::iterator hisBest
+				= std::max_element(hisBOAndScore.begin(), hisBOAndScore.end(),
+					[](const std::pair<int, double>& a, const std::pair<int, double>& b)->bool { return a.second < b.second; });
+
+			if (hisBest->second)
+				hisNextBO = hisBest->first;
+		}
+
 		/// Fix things here
 		//G = 1;
 
@@ -946,11 +967,18 @@ struct ExampleAIModule :AIModule {
 					meLurkerRush = true;
 					myMaxSunks = 0;
 				}
-				
 			}
 
 			if (enemyRace.compare("_Z") == 0) {
-				myMaxSunks = hisPrevBO == 1 ? 3 : 2;
+				myMaxSunks = hisNextBO == 1 ? 3 : 1;
+
+				for (auto u : hisInfoLastGame)
+					if (u.size() == 12)
+						if ((int)u[7] > 33)
+						{
+							myMaxSpores = 1; break;
+						}
+
 				meSmartMuta = 1;
 				meGetMuta = true;
 			}
@@ -1204,7 +1232,7 @@ struct ExampleAIModule :AIModule {
 				if (!myOrders.empty()) {
 					if (myOrders.front() != F[123] && CL(40) >= 8 && CL(123) < 6 && C->minerals() > 350) // Additional Hatcheries
 					{
-						if (!GR(k3Center, 256, BO && FGT == F[41]).empty() && hasHatNat && !hasHat3rd) BB(123, k3); // 3rd
+						if (hasHatNat && !hasHat3rd) BB(123, k3); // 3rd
 						else if (CL(123) < 4) {
 							if (!GR(knCenter, 256, BO && FGT == F[41]).empty() && !hasHatNat) BB(123, kn); // Nat
 							else BB(123); // Near starting main
@@ -1257,7 +1285,7 @@ struct ExampleAIModule :AIModule {
 					}
 				}
 			}
-			else { // no buildings when we very few workers
+			else { // no buildings when we have very few workers
 				if (!myOrders.empty())
 					if (myOrders.front().isBuilding())
 						myOrders.erase(myOrders.begin());
@@ -1555,6 +1583,16 @@ struct ExampleAIModule :AIModule {
 								if (O - co > 630) { // Get overlords
 									co = O;
 									ut(F[41]);
+								}
+							}
+						}
+						else { // if we ordered a building..
+							if (CL(40) >= 22) { // when we have enough drones and money...
+								int myAvailableSupply = C->supplyTotal() - C->supplyUsed();
+								if (CC(133) && myAvailableSupply >= 4 && C->minerals() > 200 && C->gas() > 200) { ut(F[42]); continue; }
+								if (myOrders.front() != F[133] || CL(133) == 0 && C->minerals() > 350 && C->gas() > 200) {
+									if (CC(127) && myAvailableSupply >= 2 && C->minerals() > 150 && C->gas() > 50) { ut(F[37]); continue; }
+									if (CC(134) && myAvailableSupply >= 2 && C->minerals() > 150) { ut(F[36]); continue; }
 								}
 							}
 						}
@@ -1897,16 +1935,6 @@ struct ExampleAIModule :AIModule {
 								{
 									SmartMove(u, knCenter); continue;
 								}
-
-						if (CL(123) >= 2) {
-							if (GR(k3Center, 250, BO && FGT == F[41]).empty() && u->getLoadedUnits().empty())
-								if (Unit myClosestOV = X GC(k3Center, BO && FGT == F[41]))
-									if (u == myClosestOV)
-									{
-										SmartMove(u, k3Center);
-										continue;
-									}
-						}
 					}
 				} else  {
 					bool timeToScout = true;
